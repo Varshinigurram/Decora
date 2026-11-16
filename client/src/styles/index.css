@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    background-color: #F6F3ED;
+    color: #292824;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.015em;
+  }
+
+  /* Accessible global focus styles */
+  :focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-offset: 2px;
+    ring-color: #35483D;
+  }
+
+  /* Numeric figures for metric specs and currency */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Architectural button styles matching Design System */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 bg-forest text-ivory font-medium text-sm tracking-wide rounded transition-all duration-200 hover:bg-forest-dark active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 bg-transparent border border-charcoal text-charcoal font-medium text-sm tracking-wide rounded transition-all duration-200 hover:bg-ivory-subtle hover:border-forest hover:text-forest active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-transparent text-charcoal-muted font-medium text-sm transition-colors duration-150 hover:text-charcoal hover:bg-ivory-subtle/60 rounded;
+  }
+
+  /* Architectural card treatment */
+  .card-architectural {
+    @apply bg-white border border-sand/40 rounded shadow-subtle transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5;
+  }
+}
