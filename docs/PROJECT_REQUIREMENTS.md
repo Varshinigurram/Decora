@@ -1,6 +1,6 @@
 # Décora – Project Requirements Specification
 
-**Document Version:** 1.1.0  
+**Document Version:** 1.2.0  
 **Phase:** Phase 0 (Planning & Requirements Engineering)  
 **Academic Subject:** Frontend Web Development (Primary Focus)  
 **Target Platform:** Full-Stack Web Application (React + Vite, Express + Node.js, MongoDB + Mongoose)  
@@ -10,9 +10,9 @@
 
 ## 1. System Vision & Purpose
 
-Décora is an interactive interior design and furniture customization platform that bridges the gap between visual inspiration discovery, furniture catalog browsing, material customization, and room spatial planning.
+Décora is an interactive interior design and furniture customization platform connecting visual inspiration, catalog exploration, personalized customization, and room spatial planning.
 
-Because this project is evaluated primarily under **Frontend Web Development**, the platform emphasizes interactive frontend experiences: rich visual catalog exploration, dynamic customization with mathematical price calculations in Indian Rupees (₹), persistent moodboards, responsive consultation intake, and a React-managed SVG 2D room planner.
+Because this project is evaluated under **Frontend Web Development**, the platform emphasizes interactive frontend experiences: rich visual catalog exploration, dynamic customization with mathematical price calculations in Indian Rupees (₹), persistent moodboards, responsive consultation intake for both guests and customers, and a React-managed SVG 2D room planner.
 
 ---
 
@@ -33,11 +33,11 @@ Because this project is evaluated primarily under **Frontend Web Development**, 
 
 ## 3. User Roles & Access Control
 
-| Role | Access Level | Description | Key Capabilities |
+| Role | Access Level | Description | Key Capabilities & Permissions |
 |---|---|---|---|
-| **Guest** | Public | Unauthenticated prospective customer browsing the platform. | View homepage, explore inspirations, filter catalog, view product details, test customization preview, submit consultation inquiries, register/login. |
-| **Registered Customer** | Authenticated | Logged-in homeowner or interior enthusiast. | All Guest features plus: persist custom configurations, save & manage Wishlist, create multi-item Design Boards, build and save 2D Room Plans, manage personal profile. |
-| **Administrator** | Role-Protected (`role: 'admin'`) | Platform catalog manager. | All Customer features plus: access `/admin` dashboard, manage product records (CRUD), update consultation request status (`New`, `Contacted`, `In Progress`, `Completed`), view platform summary metrics. |
+| **Guest** | Public | Unauthenticated prospective customer browsing the platform. | View homepage, explore inspirations, filter catalog, view product details, test customization preview, **submit consultation requests (by entering contact details)**, register account, log in. |
+| **Registered Customer** | Authenticated | Logged-in homeowner or interior enthusiast. | All Guest features plus: persist custom configurations, save & manage Wishlist, create multi-item Design Boards, build and save 2D Room Plans, **submit consultation requests linked to account (with pre-filled contact details)**, manage personal profile, log out. |
+| **Administrator** | Role-Protected (`role: 'admin'`) | Platform catalog manager. | All Customer features plus: access `/admin` dashboard, manage product records (CRUD), **review all incoming consultation submissions and update their status (`New`, `Contacted`, `In Progress`, `Completed`)**, view platform summary metrics. |
 
 ---
 
@@ -78,16 +78,17 @@ Because this project is evaluated primarily under **Frontend Web Development**, 
 - **FR-04.7:** Recommended / related products carousel based on matching room style and category.
 
 ### FR-05: Furniture Customization Module (Must Have)
-- **FR-05.1:** Variant configuration interface supporting:
+- **FR-05.1:** Variant configuration interface supporting valid options:
   - Upholstery / Fabric (e.g., Cream Bouclé, Olive Velvet, Charcoal Linen, Cognac Leather).
   - Wood & Material Finish (e.g., Natural White Oak, Rich Walnut, Ebonized Ash, Matte Black Metal).
   - Hardware Accents (e.g., Brushed Brass, Matte Black, Polished Chrome).
   - Dimension Scale (e.g., Standard, Compact, Extended).
-- **FR-05.2:** Visual representation displaying realistic material swatches and dynamic composite preview overlays (not unrelated product photos).
-- **FR-05.3:** Dynamic real-time price calculation engine:
+- **FR-05.2 (Valid Option Combinations):** Enforces compatible option pairs; incompatible variants are disabled with explanatory tooltips.
+- **FR-05.3 (Authentic Variant Assets):** Displays genuine high-resolution material/fabric swatches and synchronized visual overlays. Unrelated furniture photos are never used as variants.
+- **FR-05.4 (Dynamic Price Updates):** Instant mathematical recalculation in INR (₹):
   $$\text{Final Price (₹)} = \text{Base Price} + \Delta\text{Fabric} + \Delta\text{Finish} + (\text{Size Factor} \times \text{Base Price})$$
-- **FR-05.4:** "Reset to Defaults" option restoring base configuration and initial price.
-- **FR-05.5:** Save customized configuration to MongoDB for authenticated users.
+- **FR-05.5 (Reset Behavior):** "Reset to Defaults" option restores base configuration, initial dimensions, and starting price.
+- **FR-05.6 (Configuration Retention):** Active configuration is preserved across view navigation in state, and persists to `/api/v1/customizations` for authenticated users.
 
 ### FR-06: Wishlist Module (Must Have)
 - **FR-06.1:** One-click add/remove toggle for catalog and detail views.
@@ -109,32 +110,27 @@ Because this project is evaluated primarily under **Frontend Web Development**, 
 - **FR-08.5:** Item manipulation: Move, rotate in 45°/90° steps, and remove items.
 - **FR-08.6:** Live room budget counter summing the combined cost of placed furniture in INR (₹).
 - **FR-08.7:** Save room layout coordinates to MongoDB `/api/v1/room-plans` and reload saved layouts.
-- **FR-08.8 (Could Have):** Bounding-box collision detection highlighting overlapping items with visual warning borders.
+- **FR-08.8 (Could Have - Non-Mandatory):** Bounding-box collision detection highlighting overlapping items with visual warning borders.
 
 ### FR-09: Authentication & Authorization (Must Have)
-- **FR-09.1:** User registration with name, email, and password validation.
-- **FR-09.2:** Password hashing on server with bcrypt (salt rounds >= 10).
-- **FR-09.3:** Secure token issuance via HTTP-only, SameSite cookies (`jwt` token stored in browser cookie, not accessible to client JavaScript).
-- **FR-09.4:** Protected client routes (`<ProtectedRoute>`, `<AdminRoute>`) redirecting unauthenticated users to `/login`.
-- **FR-09.5:** Role-based authorization verifying `req.user.role === 'admin'` on administrative routes.
-- **FR-09.6:** Resource ownership check ensuring customers can mutate only their own wishlists, boards, and customizations.
+- **FR-09.1 (Account Registration):** User registration with name, email, and password validation (min 6 chars, alphanumeric). Hashes passwords with bcrypt (salt rounds >= 10).
+- **FR-09.2 (Customer & Admin Login):** Issues JWT inside secure, HTTP-only, SameSite cookies (`jwt` cookie, not in `localStorage`). Descriptive, secure error messages.
+- **FR-09.3 (User Logout):** Invalidation/clearing of the HTTP-only cookie (`/api/v1/auth/logout`) and immediate client state reset.
+- **FR-09.4 (Route Protection):** Protected client route wrappers (`<ProtectedRoute>`, `<AdminRoute>`) redirecting unauthenticated users to `/login`.
+- **FR-09.5 (Role-Based Access):** Express middleware verifying `req.user.role === 'admin'` on all `/api/v1/admin/*` endpoints.
+- **FR-09.6 (Ownership Verification):** Checks ensuring customers can access/modify only their own wishlists, boards, and customizations.
 
 ### FR-10: Interior Consultation Module (Must Have)
-- **FR-10.1:** Multi-step consultation questionnaire collecting:
-  - Client Full Name, Email, Phone Number.
-  - Room Type (Living Room, Bedroom, Full Home, Commercial Office).
-  - Preferred Aesthetic Style (Minimalist, Scandinavian, Japandi, Industrial).
-  - Budget Tier in INR (< ₹1,00,000, ₹1,00,000–₹3,00,000, ₹3,00,000–₹5,00,000, ₹5,00,000+).
-  - Room dimensions in meters and project description / requirements notes.
-- **FR-10.2:** Client-side validation preventing submission of incomplete or malformed contact data.
-- **FR-10.3:** Record persistence to MongoDB `/api/v1/consultations` with initial status `New`.
-- **FR-10.4:** Friendly confirmation page displaying submission summary and unique reference code.
+- **FR-10.1 (Guest Access):** Unauthenticated guest users can submit consultation requests by providing Full Name, Email, Phone Number, Room Type, Style, INR Budget Tier, Metric Dimensions, and Notes.
+- **FR-10.2 (Customer Association):** Authenticated customers have their contact details pre-filled and their consultation request linked to their account (`userId`).
+- **FR-10.3 (Input Validation & Storage):** Validates required contact and dimension data; persists to MongoDB `/api/v1/consultations` with initial status `New`.
+- **FR-10.4 (Confirmation Feedback):** Returns a confirmation screen displaying a unique reference code.
 
 ### FR-11: Administration Module (Should Have)
 - **FR-11.1:** Protected Administrative Dashboard accessible only to users with role `admin`.
 - **FR-11.2:** Basic application statistics (total catalog products, registered users, pending consultations).
-- **FR-11.3:** Product Catalog Management: Full CRUD operations (Add product, edit details, toggle in-stock flag, delete product).
-- **FR-11.4:** Consultation Pipeline: View incoming requests and update status (`New`, `Contacted`, `In Progress`, `Completed`).
+- **FR-11.3 (Product CRUD):** Full CRUD operations for furniture items (add, edit, delete, toggle in-stock flag).
+- **FR-11.4 (Consultation Pipeline):** Review all incoming consultation requests (from both guests and customers) and update pipeline status (`New` $\rightarrow$ `Contacted` $\rightarrow$ `In Progress` $\rightarrow$ `Completed`).
 - **FR-11.5 (Could Have):** Advanced sales/engagement analytics and category popularity graphs.
 
 ---
@@ -154,17 +150,17 @@ Because this project is evaluated primarily under **Frontend Web Development**, 
 
 ## 6. Traceability Matrix
 
-| Module | Requirements Addressed | User Roles | Primary Components / Endpoints | Priority |
-|---|---|---|---|---|
-| **Home & Navigation** | FR-01, NFR-02, NFR-06 | All Roles | `Navbar`, `Footer`, `Hero`, `FeaturedShowcase`, `HomePage.jsx` | **Must Have** |
-| **Inspiration Portfolio** | FR-02, NFR-01, NFR-02 | All Roles | `InspirationPage.jsx`, `InspirationDetailPage.jsx`, `/api/v1/designs` | **Must Have** |
-| **Catalog & Discovery** | FR-03, FR-04, NFR-01, NFR-02 | All Roles | `CatalogPage.jsx`, `ProductDetailPage.jsx`, `FilterSidebar.jsx`, `/api/v1/products` | **Must Have** |
-| **Furniture Customizer** | FR-05, NFR-01, NFR-03 | All Roles | `CustomizerPage.jsx`, `MaterialSelector.jsx`, `/api/v1/customizations` | **Must Have** |
-| **Wishlist & Boards** | FR-06, FR-07, NFR-04 | Customer, Admin | `WishlistPage.jsx`, `DesignBoardsPage.jsx`, `/api/v1/wishlist`, `/api/v1/boards` | **Must Have** |
-| **Authentication & Profile** | FR-09, NFR-04 | All Roles | `LoginPage.jsx`, `RegisterPage.jsx`, `AuthContext.jsx`, `/api/v1/auth` | **Must Have** |
-| **Consultation Intake** | FR-10, NFR-03 | All Roles | `ConsultationPage.jsx`, `/api/v1/consultations` | **Must Have** |
-| **2D Room Planner (SVG)** | FR-08.1–08.7, NFR-01 | Customer, Admin | `RoomPlannerPage.jsx`, `SvgRoomCanvas.jsx`, `/api/v1/room-plans` | **Should Have** |
-| **Admin Product Management** | FR-11.1–11.3, NFR-04 | Admin | `AdminDashboard.jsx`, `AdminProducts.jsx`, `/api/v1/admin/products` | **Should Have** |
-| **Consultation Status Mgmt** | FR-11.4, NFR-04 | Admin | `AdminConsultations.jsx`, `/api/v1/admin/consultations` | **Should Have** |
-| **Collision Detection** | FR-08.8 | Customer, Admin | `SvgRoomCanvas.jsx` collision overlay helper | **Could Have** |
-| **Advanced Analytics** | FR-11.5 | Admin | `AdminAnalytics.jsx` | **Could Have** |
+| Module | Requirements Addressed | User Stories Addressed | User Roles | Primary Components / Endpoints | Priority |
+|---|---|---|---|---|---|
+| **Authentication & Profile** | FR-09.1–09.6 | US-AUTH-01, US-AUTH-02, US-AUTH-03 | All Roles | `LoginPage.jsx`, `RegisterPage.jsx`, `AuthContext.jsx`, `/api/v1/auth` | **Must Have** |
+| **Home & Navigation** | FR-01, NFR-02, NFR-06 | US-G01 | All Roles | `Navbar`, `Footer`, `Hero`, `FeaturedShowcase`, `HomePage.jsx` | **Must Have** |
+| **Inspiration Portfolio** | FR-02, NFR-01, NFR-02 | US-G02 | All Roles | `InspirationPage.jsx`, `InspirationDetailPage.jsx`, `/api/v1/designs` | **Must Have** |
+| **Catalog & Discovery** | FR-03, FR-04, NFR-01 | US-G03, US-G04 | All Roles | `CatalogPage.jsx`, `ProductDetailPage.jsx`, `FilterSidebar.jsx`, `/api/v1/products` | **Must Have** |
+| **Furniture Customizer** | FR-05.1–05.6 | US-CUST-01 | All Roles | `CustomizerPage.jsx`, `MaterialSelector.jsx`, `/api/v1/customizations` | **Must Have** |
+| **Wishlist & Boards** | FR-06, FR-07 | US-WISH-01, US-BOARD-01 | Customer, Admin | `WishlistPage.jsx`, `DesignBoardsPage.jsx`, `/api/v1/wishlist`, `/api/v1/boards` | **Must Have** |
+| **Consultation Intake** | FR-10.1–10.4 | US-CONS-01, US-CONS-02 | Guest, Customer | `ConsultationPage.jsx`, `/api/v1/consultations` | **Must Have** |
+| **2D Room Planner (SVG)** | FR-08.1–08.7 | US-PLAN-01 | Customer, Admin | `RoomPlannerPage.jsx`, `SvgRoomCanvas.jsx`, `/api/v1/room-plans` | **Should Have** |
+| **Admin Product Management** | FR-11.1–11.3 | US-ADM-01, US-ADM-02 | Admin | `AdminDashboard.jsx`, `AdminProducts.jsx`, `/api/v1/admin/products` | **Should Have** |
+| **Consultation Status Mgmt** | FR-11.4 | US-ADM-03 | Admin | `AdminConsultations.jsx`, `/api/v1/admin/consultations` | **Should Have** |
+| **Collision Detection** | FR-08.8 | US-PLAN-02 | Customer, Admin | `SvgRoomCanvas.jsx` collision overlay helper | **Could Have** |
+| **Advanced Analytics** | FR-11.5 | US-ADM-04 | Admin | `AdminAnalytics.jsx` | **Could Have** |

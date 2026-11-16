@@ -1,6 +1,6 @@
 # Décora – User Stories & Acceptance Criteria
 
-**Document Version:** 1.1.0  
+**Document Version:** 1.2.0  
 **Phase:** Phase 0 (Planning & Requirements Engineering)  
 **Academic Subject:** Frontend Web Development (Primary Focus)  
 **Methodology:** Agile / User-Centric Requirements Decomposition  
@@ -9,194 +9,239 @@
 ---
 
 ## 1. Overview
-This document specifies the user stories and acceptance criteria for Décora, structured across Guest, Registered Customer, and Administrator personas using the MoSCoW prioritization scheme.
+This document specifies the complete user stories and acceptance criteria for Décora. Every user story carries an explicit **MoSCoW priority rating** aligned with the 14-day development plan:
+- **Must Have:** Core academic MVP (Days 1–12).
+- **Should Have:** Important enhancements & management features (Days 10 & 13).
+- **Could Have:** Optional stretch capabilities (Day 14).
+- **Won't Have:** Strictly out-of-scope for Release 1.0.
 
 ---
 
-## 2. Guest User Stories
+## 2. Authentication & Session User Stories
+
+### US-AUTH-01: User Registration
+- **User Story:** As a **Guest**, I want to register a new account with my name, email, and password, so that I can personalize and persist my design boards, wishlist, and customized furniture.
+- **Priority:** **Must Have**
+- **Acceptance Criteria:**
+  - Client-side validation verifies:
+    - Name is not empty.
+    - Email follows standard format (`user@example.com`).
+    - Password is at least 6 characters long and contains at least one numeric character.
+  - Server hashes password using bcrypt with minimum salt rounds of 10 before storage.
+  - Returns clear, friendly error messages on failure (e.g., "An account with this email already exists").
+  - On successful registration, immediately creates an authenticated session via a secure HTTP-only cookie (`Set-Cookie: jwt=...; HttpOnly; SameSite=Lax`) and redirects user to their previous page or dashboard.
+
+### US-AUTH-02: Customer & Admin Login
+- **User Story:** As a **Registered Customer or Administrator**, I want to securely log into my account using my email and password, so that I can access my saved designs, wishlist, or administrative tools.
+- **Priority:** **Must Have**
+- **Acceptance Criteria:**
+  - Login form accepts email and password with client validation against empty inputs.
+  - Invalid credentials return a generic, secure error message ("Invalid email or password") to prevent account enumeration.
+  - Upon successful verification, server signs a JWT containing `userId` and `role` (`customer` or `admin`), issuing it inside a secure HTTP-only cookie.
+  - Client state updates via `AuthContext` to reflect authentication status without storing tokens in `localStorage`.
+  - Admin users are navigated to `/admin` or granted access to administrative controls.
+
+### US-AUTH-03: User Logout
+- **User Story:** As an **Authenticated User**, I want to log out of my account from any page, so that my personal session is securely terminated on shared devices.
+- **Priority:** **Must Have**
+- **Acceptance Criteria:**
+  - Clicking "Log Out" sends a request to `/api/v1/auth/logout`.
+  - Server clears the HTTP-only `jwt` cookie with an immediate expiration date (`expires: new Date(0)`).
+  - Client state (`AuthContext`) immediately resets user state to `null`.
+  - User is gracefully redirected to the homepage or login page with an informative toast message ("You have been successfully logged out").
+  - Access to protected routes (`/boards`, `/wishlist`, `/admin`) is immediately revoked.
+
+---
+
+## 3. Discovery & Exploration User Stories
 
 ### US-G01: Homepage Brand Discovery
-- **User Story:** As a **Guest**, I want to view an inviting landing page with brand storytelling, room categories, and featured collections, so that I can immediately understand Décora's offerings and design aesthetic.
+- **User Story:** As a **Guest**, I want to explore an engaging landing page with room categories, featured collections, and interactive teasers, so that I understand Décora's design aesthetic.
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Hero section displays engaging typography, brand subtitle, and primary CTA ("Explore Catalog").
-  - Room category showcase features 4 room types (Living Room, Bedroom, Dining, Home Office) with curated imagery.
-  - Featured furniture section displays trending pieces with prices formatted in INR (₹) and customization tags.
-  - Testimonial and consultation booking teasers are displayed.
-  - Page is fully responsive on mobile viewports (>=375px) without horizontal scrolling.
+  - Responsive header with brand logo, navigation links, and mobile drawer.
+  - Hero banner with headline, subtitle, and primary CTA ("Explore Catalog").
+  - Room category showcase featuring 4 room types (Living Room, Bedroom, Dining, Home Office).
+  - Featured furniture section showing trending pieces with prices formatted in INR (₹) and customization badges.
+  - Responsive layout on mobile (>=375px), tablet, and desktop without horizontal scroll overflow.
 
 ### US-G02: Interior Inspiration Exploration
-- **User Story:** As a **Guest**, I want to browse curated interior design collections and filter by room type and style, so that I can discover visual ideas for my living spaces.
+- **User Story:** As a **Guest or Customer**, I want to browse curated interior design collections and filter by room type and style, so that I can gather visual ideas for my living spaces.
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Filter chips allow filtering by Style (Minimalist, Scandinavian, Japandi, Industrial) and Room Type.
-  - Clicking a design opens a detail view with concept description and color swatches.
-  - Detailed view provides a "Shop the Look" section listing related catalog furniture items with direct navigation.
-  - Unauthenticated users attempting to save an inspiration item are prompted to log in.
+  - Filter chips support filtering by Style (Minimalist, Scandinavian, Japandi, Industrial) and Room Type.
+  - Clicking an inspiration card opens a detail view with concept notes and color palette swatches.
+  - Includes a "Shop the Look" section listing related catalog furniture with direct links.
+  - Authenticated users can save the inspiration piece to an active Design Board.
 
 ### US-G03: Furniture Catalog Filtering & Search
-- **User Story:** As a **Guest**, I want to search and filter furniture by category, room, material, and price range in INR (₹), so that I can quickly find pieces matching my needs and budget.
+- **User Story:** As a **Guest or Customer**, I want to search and filter furniture by category, room, material, and price range in INR (₹), so that I can locate matching pieces.
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Search input filters product cards in real time against title, description, and tags.
-  - Price range slider dynamically updates minimum and maximum bounds in INR (₹).
-  - Material and room filters operate together as combined facets.
-  - Sort dropdown correctly re-orders products by "Price: Low to High", "Price: High to Low", and "Popularity".
-  - Empty search state provides an informative message and a "Reset All Filters" button.
+  - Real-time search filters product cards by title, description, and keywords.
+  - Multi-select filters for Room Type, Category, and Material work simultaneously.
+  - Dynamic price range slider filters items within selected INR (₹) limits.
+  - Sort dropdown correctly sorts by "Price: Low to High", "Price: High to Low", and "Popularity".
+  - Empty state displays a friendly prompt with a "Reset All Filters" button.
 
 ### US-G04: Product Detail Examination
-- **User Story:** As a **Guest**, I want to inspect detailed product specifications, materials, and metric dimensions, so that I can verify whether an item physically fits my room.
+- **User Story:** As a **Guest or Customer**, I want to inspect product specifications, metric dimensions, and multi-angle imagery, so that I can verify physical fit and aesthetic match.
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Image gallery allows toggling between multiple viewing angles of the piece.
+  - Multi-image gallery allows toggling between viewing angles.
   - Specifications table displays dimensions in centimeters ($W \times D \times H\text{ cm}$) and weight in kilograms ($kg$).
-  - Pricing is clearly displayed in INR (₹) alongside stock status ("In Stock" / "Made to Order").
-  - Prominent "Customize This Piece" button navigates into the Customizer with this product pre-loaded.
+  - Pricing is formatted in INR (₹) with clear stock availability labels ("In Stock" / "Made to Order").
+  - "Customize This Piece" button navigates into the Customizer with this product pre-loaded.
 
-### US-G05: Interactive Customization & Dynamic Pricing
-- **User Story:** As a **Guest**, I want to select different upholstery fabrics, wood finishes, and hardware options, so that I can see the customized look and dynamic price in INR (₹).
+---
+
+## 4. Interactive Customization & Personalization User Stories
+
+### US-CUST-01: Furniture Customization & Real-Time Dynamic Pricing
+- **User Story:** As a **Guest or Customer**, I want to select different fabrics, wood finishes, hardware, and dimensions for a furniture piece, so that I can see the customized look and real-time updated price in INR (₹).
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Selecting fabric and finish swatches updates visual overlays and highlights on the product without displaying unrelated furniture images.
-  - Price indicator recalculates immediately using the formula:
+  - **Valid Option Combinations:** Only compatible options are selectable (e.g., specific premium fabrics pair with designated solid wood finishes; incompatible combinations are visibly disabled with clear helper text).
+  - **Authentic Variant Assets:** Customizer uses genuine high-resolution material texture swatches and coordinated SVG/CSS visual overlays on the product. Mismatched or unrelated furniture photos are **never** displayed as variant previews.
+  - **Dynamic Price Updates:** Price indicator updates instantaneously upon option changes using the formula:
     $$\text{Final Price (₹)} = \text{Base Price} + \Delta\text{Fabric} + \Delta\text{Finish} + (\text{Size Factor} \times \text{Base Price})$$
-  - "Reset" button restores base configuration and default price.
-  - Unauthenticated users clicking "Save Configuration" are prompted to log in.
+  - **Reset Behavior:** "Reset to Defaults" button immediately restores original base materials, base dimensions, and base price.
+  - **Configuration Retention:** Selected configuration persists in React component state across active navigation and, for authenticated users, persists to `/api/v1/customizations`.
+  - Unauthenticated guests clicking "Save Configuration" are prompted to log in or register.
 
-### US-G06: Account Registration & Authentication
-- **User Story:** As a **Guest**, I want to register a personal account, so that I can save my customizations, wishlist items, and design boards.
+### US-WISH-01: Customer Wishlist Management
+- **User Story:** As a **Customer**, I want to toggle items in my personal wishlist, so that I can track and compare my favorite furniture pieces across sessions.
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Registration form validates email format and password strength (minimum 6 characters).
-  - Validation errors appear inline for duplicate emails or empty fields.
-  - Successful registration establishes an authenticated session via a secure HTTP-only cookie (`Set-Cookie: jwt=...; HttpOnly; SameSite=Lax`).
-  - Passwords are encrypted on the server with bcrypt prior to storage.
+  - Heart icon on product cards and detail pages provides instant toggle feedback.
+  - Dedicated Wishlist view lists all saved items with thumbnail, title, INR price, and stock status.
+  - Persisted in MongoDB via `/api/v1/wishlist` for authenticated customers.
+  - Unauthenticated users attempting to add to wishlist are directed to log in.
+
+### US-BOARD-01: Personal Design Boards Creation & Cost Aggregation
+- **User Story:** As a **Customer**, I want to organize furniture and inspiration items into custom named design boards, so that I can plan complete rooms and review total estimated costs.
+- **Priority:** **Must Have**
+- **Acceptance Criteria:**
+  - Customers can create, rename, and delete multiple named boards (e.g., "Living Room Japandi 2026").
+  - Items can be added directly from catalog cards, customizer configurations, or inspiration views.
+  - Board detail view calculates and displays the aggregated budget total of all items in INR (₹).
+  - All boards and board items synchronize with MongoDB via `/api/v1/boards`.
 
 ---
 
-## 3. Registered Customer User Stories
+## 5. Consultation & Advisory User Stories
 
-### US-C01: Wishlist Persistence & Management
-- **User Story:** As a **Customer**, I want to save favorite furniture pieces to a personal wishlist, so that I can easily revisit them.
+### US-CONS-01: Guest Consultation Request Submission
+- **User Story:** As a **Guest**, I want to submit a design consultation request by providing my contact details, room requirements, and budget, so that an interior designer can review my space without requiring prior registration.
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Clicking the heart icon on any product card toggles its wishlist status instantly.
-  - Dedicated Wishlist view displays all saved items with thumbnail, title, INR price (₹), and availability.
-  - Changes are persisted in MongoDB via `/api/v1/wishlist` for authenticated sessions.
-  - Products can be removed individually or navigated directly to the Customizer.
+  - Intake form collects Full Name, Email, Phone Number, Room Type, Preferred Style, INR Budget Tier, Metric Room Dimensions ($L \times W\text{ m}$), and Project Notes.
+  - Client-side validation ensures all contact fields and requirements are valid.
+  - Form submits payload to `/api/v1/consultations` with `status: 'New'`.
+  - On submission, guest receives an on-screen confirmation with a unique reference tracking ID.
 
-### US-C02: Saving Custom Configurations
-- **User Story:** As a **Customer**, I want to save my personalized furniture configurations, so that I can preserve my material choices and price estimations.
+### US-CONS-02: Registered Customer Consultation Submission
+- **User Story:** As a **Customer**, I want to submit a design consultation request with my saved account information pre-filled, so that my consultation is directly linked to my profile.
 - **Priority:** **Must Have**
 - **Acceptance Criteria:**
-  - Logged-in user can click "Save Configuration" inside the Customizer.
-  - The customized configuration persists to MongoDB via `/api/v1/customizations` with chosen swatches, dimensions, and calculated INR price.
-  - A toast notification confirms successful save.
-
-### US-C03: Personal Design Boards Creation
-- **User Story:** As a **Customer**, I want to organize furniture and inspiration items into named design boards, so that I can plan room themes and monitor combined budgets.
-- **Priority:** **Must Have**
-- **Acceptance Criteria:**
-  - Customer can create multiple named boards (e.g., "Master Bedroom Japandi").
-  - Items can be added to an active board directly from catalog cards or customizer views.
-  - Board detail page aggregates the total estimated cost of all included items in INR (₹).
-  - Boards and individual board items can be edited or removed with data synced to `/api/v1/boards`.
-
-### US-C04: 2D Room Planner (React-Managed SVG)
-- **User Story:** As a **Customer**, I want to arrange furniture within a 2D top-down room floor plan using metric dimensions, so that I can evaluate room flow and furniture spacing.
-- **Priority:** **Should Have**
-- **Acceptance Criteria:**
-  - User can configure room dimensions in meters (e.g., $4.0m \times 5.0m$).
-  - Palette sidebar allows selecting furniture items and placing them onto the SVG room canvas.
-  - Placed furniture items can be repositioned via drag-and-drop, rotated in 45°/90° increments, and deleted.
-  - Live budget indicator updates in real time to show the total cost of placed furniture in INR (₹).
-  - Saved room layouts persist to `/api/v1/room-plans` and can be reloaded.
-
-### US-C05: Room Planner Collision Warning
-- **User Story:** As a **Customer**, I want visual warnings when furniture pieces overlap in the 2D room planner, so that I do not overcrowd my floor layout.
-- **Priority:** **Could Have**
-- **Acceptance Criteria:**
-  - Simple 2D bounding-box intersection helper evaluates placed item bounds.
-  - Intersecting items display an amber or red boundary highlight.
-
-### US-C06: Design Consultation Request Submission
-- **User Story:** As a **Customer**, I want to submit a detailed design consultation request with room dimensions, style preferences, and budget tier, so that an interior designer can review my project.
-- **Priority:** **Must Have**
-- **Acceptance Criteria:**
-  - Multi-step questionnaire captures contact details, room type, style preference, budget bracket in INR (₹), and project notes.
-  - Form validates required fields and submits payload to `/api/v1/consultations`.
-  - Submission displays a unique confirmation reference number upon completion.
+  - Logged-in customer has their Name, Email, and Phone automatically pre-filled.
+  - Submission payload associates the customer's `userId`.
+  - Customer can attach an active Design Board reference to the consultation request.
+  - Submission is saved to MongoDB with `status: 'New'` and confirmation is displayed.
 
 ---
 
-## 4. Administrator User Stories
+## 6. Spatial Planning User Stories
 
-### US-A01: Protected Admin Dashboard & Metrics
-- **User Story:** As an **Administrator**, I want to log into a restricted administrative portal, so that I can view overall platform statistics and manage catalog records.
+### US-PLAN-01: 2D Room Planner (React-Managed SVG)
+- **User Story:** As a **Customer**, I want to position and rotate top-down furniture pieces within a 2D metric floor plan, so that I can visualize spatial layout and estimate total room furniture cost.
 - **Priority:** **Should Have**
 - **Acceptance Criteria:**
-  - Admin login requires credentials where `user.role === 'admin'`. Non-admin accounts receive HTTP 403 Forbidden.
-  - Dashboard summarizes total products, categories, registered users, and consultation inquiries.
+  - User can configure room length and width in meters (e.g., $4.5m \times 3.8m$).
+  - Palette sidebar lists top-down SVG representations of furniture items (sofas, tables, beds, desks).
+  - Furniture can be dragged and dropped onto the SVG room canvas.
+  - Placed furniture can be repositioned, rotated in 45°/90° increments, and deleted.
+  - Dynamic budget summary updates in real time to show total cost of placed items in INR (₹).
+  - Room layout can be saved to `/api/v1/room-plans` and reloaded.
 
-### US-A02: Product Catalog CRUD Management
-- **User Story:** As an **Administrator**, I want to create, update, and delete furniture products, so that the online catalog remains current.
+### US-PLAN-02: Room Planner Collision Warning
+- **User Story:** As a **Customer**, I want visual warnings when furniture pieces overlap on the room planner canvas, so that I do not overcrowd my room layout.
+- **Priority:** **Could Have** (Optional stretch - not a mandatory completion blocker)
+- **Acceptance Criteria:**
+  - Simple 2D bounding-box intersection check detects overlapping SVG elements.
+  - Overlapping items display an amber/red outline warning.
+
+---
+
+## 7. Administrative User Stories
+
+### US-ADM-01: Protected Admin Dashboard & Metrics
+- **User Story:** As an **Administrator**, I want to log into a restricted administrative portal, so that I can monitor catalog metrics and system activity.
 - **Priority:** **Should Have**
 - **Acceptance Criteria:**
-  - Form allows inputting Name, Category, Style, Base Price (₹), Metric Dimensions, and Image asset paths.
-  - Editing updates existing product documents via `/api/v1/admin/products/:id`.
-  - Delete action includes confirmation modal to prevent accidental data loss.
+  - Access restricted strictly to users with `role: 'admin'`. Non-admin accounts receive HTTP 403 Forbidden.
+  - Dashboard displays metric cards: total products, total registered users, and active consultations.
+
+### US-ADM-02: Product Catalog CRUD Management
+- **User Story:** As an **Administrator**, I want to add, edit, and delete furniture products, so that the customer catalog remains up to date.
+- **Priority:** **Should Have**
+- **Acceptance Criteria:**
+  - Product creation and edit forms allow managing Title, Category, Style, Base Price in INR (₹), Metric Dimensions, and Image asset references.
+  - Updates persist to `/api/v1/admin/products/:id` with instant reflect in catalog views.
+  - Deletion includes a confirmation prompt to prevent accidental data loss.
   - In-stock availability toggle updates live catalog visibility.
 
-### US-A03: Consultation Pipeline Management
-- **User Story:** As an **Administrator**, I want to review incoming consultation requests and update their status, so that customer inquiries are tracked systematically.
+### US-ADM-03: Consultation Pipeline Management
+- **User Story:** As an **Administrator**, I want to review incoming consultation requests from both guests and customers and update their status, so that inquiries are handled systematically.
 - **Priority:** **Should Have**
 - **Acceptance Criteria:**
-  - Table displays all submissions with submitter name, room type, budget tier (₹), and current status.
-  - Status can be updated through pipeline stages: `New` $\rightarrow$ `Contacted` $\rightarrow$ `In Progress` $\rightarrow$ `Completed`.
-  - Updates persist in MongoDB via `/api/v1/admin/consultations/:id`.
+  - Filterable table lists all submissions showing client name, user type (Guest vs Customer), room type, budget tier, and current status.
+  - Admin can update request status through stages: `New` $\rightarrow$ `Contacted` $\rightarrow$ `In Progress` $\rightarrow$ `Completed`.
+  - Updates persist immediately in MongoDB via `/api/v1/admin/consultations/:id`.
 
-### US-A04: Advanced Analytics Dashboard
-- **User Story:** As an **Administrator**, I want to view visual charts of category popularity and consultation volume trends, so that I can understand customer demand.
-- **Priority:** **Could Have**
+### US-ADM-04: Advanced Analytics Dashboard
+- **User Story:** As an **Administrator**, I want to view graphical charts of style demand, popular customized products, and inquiry volume, so that I can analyze customer preferences.
+- **Priority:** **Could Have** (Optional stretch goal)
 - **Acceptance Criteria:**
-  - Graphical breakdown of popular styles, most customized furniture pieces, and inquiry volume over time.
+  - Interactive visual charts for category breakdown, popular interior styles, and consultation volume over time.
 
 ---
 
-## 5. MoSCoW Prioritization Summary
+## 8. Final MoSCoW Prioritization Summary
 
 ```text
 ================================================================================
-MUST HAVE (Core Academic MVP):
+MUST HAVE (Core Academic MVP - 14-Day Priority):
 ================================================================================
+├── US-AUTH-01: User Registration (Validation, bcrypt hashing, HTTP-only cookie)
+├── US-AUTH-02: Customer & Admin Login (JWT issuance in HTTP-only cookie)
+├── US-AUTH-03: User Logout (Cookie invalidation, AuthContext reset)
 ├── US-G01: Homepage & Navigation (Responsive layout, hero, categories, footer)
 ├── US-G02: Interior Inspiration (Gallery, style filters, "Shop the Look")
 ├── US-G03: Furniture Catalog (Search, faceted filters, INR price sorting)
 ├── US-G04: Product Details (Metric dimensions, multi-image gallery, specs)
-├── US-G05: Furniture Customizer (Swatches, real-time INR price formula, resets)
-├── US-G06: Authentication (Secure HTTP-only cookies, bcrypt, validation)
-├── US-C01: Customer Wishlist (Instant toggle, MongoDB persistence)
-├── US-C02: Saved Customizations (Preserve configured variants in account)
-├── US-C03: Personal Design Boards (Multi-board creation, total cost aggregation)
-└── US-C06: Design Consultation Intake (Multi-step form, INR budget tiers)
+├── US-CUST-01: Furniture Customizer (Valid combos, retention, authentic swatches, INR math, resets)
+├── US-WISH-01: Customer Wishlist (Instant toggle, MongoDB persistence)
+├── US-BOARD-01: Personal Design Boards (Multi-board creation, total cost aggregation)
+├── US-CONS-01: Guest Consultation Intake (Contact details, metric dimensions, INR tiers)
+└── US-CONS-02: Customer Consultation Intake (Account pre-fill, board linking)
 
 ================================================================================
-SHOULD HAVE (Enhanced Polish & Management):
+SHOULD HAVE (Enhanced Management & Planning):
 ================================================================================
-├── US-C04: 2D Room Planner (React-managed SVG canvas, drag/drop, rotate, budget)
-├── US-A01: Admin Portal & Metrics (Protected route, summary statistics)
-├── US-A02: Product Catalog CRUD (Add, edit, delete, toggle availability)
-└── US-A03: Consultation Pipeline Management (Review submissions, update status)
+├── US-PLAN-01: 2D Room Planner (React-managed SVG canvas, drag/drop, rotate, budget)
+├── US-ADM-01: Admin Portal & Metrics (Protected route, summary statistics)
+├── US-ADM-02: Product Catalog CRUD (Add, edit, delete, toggle availability)
+└── US-ADM-03: Consultation Pipeline Management (Review submissions, update status)
 
 ================================================================================
-COULD HAVE (Stretch Goals if Time Permits):
+COULD HAVE (Optional Stretch Features):
 ================================================================================
-├── US-C05: Room Planner Collision Warning (Bounding box intersection highlight)
-├── US-A04: Advanced Analytics Dashboard (Visual demand and category charts)
-└── Export Room Plan / Design Board as downloadable PDF or PNG
+├── US-PLAN-02: Room Planner Collision Warning (Bounding box intersection highlight)
+└── US-ADM-04: Advanced Analytics Dashboard (Visual demand and category charts)
 
 ================================================================================
-WON'T HAVE (Strictly Out of Scope for 14-Day Delivery):
+WON'T HAVE (Strictly Out of Scope for Release 1.0):
 ================================================================================
 ├── Full 3D WebGL / Three.js Room Simulation
 ├── Mobile Augmented Reality (AR) Camera Projection

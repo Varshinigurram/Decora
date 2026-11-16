@@ -74,7 +74,7 @@ flowchart TD
 | **Day 9** | **Phase 4: Customizer** | Build Interactive Furniture Customizer (`FR-05`) with fabric/wood swatches, dynamic INR price formula: $\text{Price} = \text{Base} + \Delta\text{Fabric} + \Delta\text{Finish} + (\text{Size Factor} \times \text{Base})$, and reset capability. | Customizer updates visual overlays and recalculates INR pricing in real time. |
 | **Day 10** | **Phase 4: Room Planner** | Implement React-Managed SVG 2D Room Planner (`FR-08`): customizable room dimensions in meters, furniture palette, drag/drop placement, 45°/90° rotation, and live room budget tally. | SVG canvas allows positioning, rotating, and tallying furniture costs smoothly with zero external canvas overhead. |
 | **Day 11** | **Phase 5: Backend API** | Initialize Express backend with `/api/v1` routes; configure MongoDB Atlas primary connection and local MongoDB fallback; define Mongoose schemas and seed script. | Server connects to database; seeds realistic furniture and user accounts via `/api/v1/products`. |
-| **Day 12** | **Phase 5: Auth & Sync** | Implement secure HTTP-only cookie authentication (`/api/v1/auth`), role verification, and connect client state for Wishlist (`FR-06`), Design Boards (`FR-07`), and Consultations (`FR-10`). | Authenticated users can log in, sync wishlists, and submit consultation forms with database persistence. |
+| **Day 12** | **Phase 5: Auth & Sync** | Implement secure HTTP-only cookie authentication (`/api/v1/auth`: register, login, logout), role verification, and connect client state for Wishlist (`FR-06`), Design Boards (`FR-07`), and Consultations (`FR-10` for both guests and customers). | Authenticated users can register, log in, log out, sync wishlists, and submit consultation forms (with guest submissions also supported) with database persistence. |
 | **Day 13** | **Phase 6: Admin Portal** | Build protected Admin Dashboard (`FR-11`): summary metrics, Product CRUD table with add/edit modals, and Consultation status management pipeline (`New` $\rightarrow$ `Contacted` $\rightarrow$ `Completed`). | Admin users can manage products and update consultation statuses with role guard protection. |
 | **Day 14** | **Phase 6: Polish & Submit** | Cross-device testing (mobile, tablet, desktop), security and input validation audit, Lighthouse performance review, code cleanup, and academic project submission packaging. | Zero console errors, fully responsive UI, documented API endpoints, ready for evaluation. |
 
@@ -90,10 +90,10 @@ To protect the 14-day academic delivery window while maximizing Frontend Web Dev
 - **Furniture Catalog (`FR-03`):** Search, faceted filters (room, style, material), and INR price sorting.
 - **Product Details (`FR-04`):** Metric dimensions ($W \times D \times H\text{ cm}$), specifications, and multi-angle gallery.
 - **Furniture Customization (`FR-05`):** Visual swatch selectors and real-time dynamic pricing calculation in INR (₹).
-- **Authentication (`FR-09`):** Secure HTTP-only cookies, password hashing with bcrypt, and role guards.
+- **Authentication (`FR-09`):** Explicit registration, login, and logout flows via secure HTTP-only cookies, password hashing with bcrypt, input validation, and role guards.
 - **Wishlist (`FR-06`):** One-click toggle and MongoDB persistence.
 - **Design Boards (`FR-07`):** Multi-board project organization with aggregate cost tallying in INR (₹).
-- **Consultation Intake (`FR-10`):** Multi-step consultation questionnaire with metric room inputs and budget tiers.
+- **Consultation Intake (`FR-10`):** Multi-step consultation questionnaire for both guests (contact details capture) and registered customers (profile pre-fill and account linking) with metric room inputs and budget tiers.
 
 ### 🔶 Secondary Features (Should Have - Scheduled for Days 10 & 13)
 - **2D Room Planner (`FR-08`):** Top-down React-managed SVG canvas with drag/drop, rotation, and live budget counter.

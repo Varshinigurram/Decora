@@ -21,19 +21,19 @@
 - **Product Details (`FR-04`):** Multi-image gallery, metric dimensions ($W \times D \times H\text{ cm}$), materials, care guides, related items, and direct links to the customizer.
 
 ### 2. Interactive & Personalization Engine
-- **Furniture Customizer (`FR-05 - Must Have`):** Interactive visual customizer allowing users to tweak finishes (natural oak, walnut, matte black), fabrics (bouclé, velvet, linen, leather), dimensions, and configurations with dynamic real-time price estimation formula in INR (₹).
+- **Furniture Customizer (`FR-05 - Must Have`):** Interactive visual customizer supporting valid option combinations, authentic high-res material/wood swatches with coordinated SVG/CSS overlays (no unrelated photos), dynamic real-time price estimation formula in INR (₹), reset behavior, and configuration retention.
 - **Wishlist Management (`FR-06 - Must Have`):** Instant saving and syncing of favorite items with MongoDB persistence for authenticated users.
 - **Design Boards (`FR-07 - Must Have`):** Moodboards pairing furniture and inspiration photos with aggregated budget estimates in INR (₹).
 - **Interactive 2D Room Planner (`FR-08 - Should Have`):** React-managed SVG canvas with custom metric room dimensions, palette drag-and-drop, 45°/90° rotation controls, live room budget counter, and optional collision warnings (`Could Have`).
 
 ### 3. Consultation & User Services (Must Have)
-- **Design Consultation Request (`FR-10`):** Multi-step consultation intake form collecting room type, INR budget tiers, aesthetic preferences, room dimensions, and contact info.
-- **User Authentication & Profiles (`FR-09`):** Secure HTTP-only cookies containing JWT tokens, bcrypt password hashing, role-based access control (`guest`, `customer`, `admin`), and resource ownership verification.
+- **Design Consultation Request (`FR-10 - Must Have`):** Multi-step consultation questionnaire accessible to both **Guests** (captures full contact info) and **Registered Customers** (auto pre-filled and linked to user account), collecting metric room dimensions, INR budget tiers, and design style notes.
+- **User Authentication & Profiles (`FR-09 - Must Have`):** Explicit registration, login, and logout flows via secure HTTP-only cookies containing JWT tokens, bcrypt password hashing, input validation, role-based access control (`guest`, `customer`, `admin`), and resource ownership verification.
 
 ### 4. Administrative Control Panel (`FR-11 - Should Have`)
 - **Metrics & Overview:** Catalog counts, active consultation requests, and registered users.
 - **Product Management:** Full CRUD operations for furniture items, materials, variants, and base pricing in INR.
-- **Consultation Pipeline:** Track incoming consultation requests from "New" to "Contacted", "In Progress", and "Completed".
+- **Consultation Pipeline:** Dedicated pipeline for administrators to review all incoming consultation submissions (guest and customer) and update status (`New` $\rightarrow$ `Contacted` $\rightarrow$ `In Progress` $\rightarrow$ `Completed`).
 
 ---
 
