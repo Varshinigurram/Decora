@@ -1,7 +1,8 @@
 # Décora – Risk Register & Mitigation Strategy
 
-**Document Version:** 1.0.0  
+**Document Version:** 1.1.0  
 **Phase:** Phase 0 (Planning & Requirements Engineering)  
+**Academic Subject:** Frontend Web Development (Primary Focus)  
 **Evaluation Standard:** Risk Severity Index (Probability × Impact)
 
 ---
@@ -20,26 +21,52 @@ $$\text{Risk Severity Score (RSS)} = \text{Probability} \times \text{Impact}$$
 
 | Risk ID | Category | Risk Description | Prob (1-5) | Imp (1-5) | Severity (P×I) | Mitigation Strategy | Contingency / Fallback Plan |
 |---|---|---|---|---|---|---|---|
-| **RSK-01** | Technical | **Room Planner 2D Canvas Over-Engineering:** Building custom drag/drop, rotation, and collision math from scratch could encounter edge cases or browser quirks. | 4 | 4 | **16 (High)** | Implement top-down architectural bounding-box representation with clear coordinate math (X, Y, Width, Length, Angle). Use standard HTML5 Canvas 2D or SVG elements. | If HTML5 Canvas hit-testing becomes cumbersome, switch to an SVG-based room container with standard CSS transform drag-and-drop. |
-| **RSK-02** | Data / Infra | **MongoDB Connection / Service Availability:** Local MongoDB server daemon might not be running or may encounter permissions issues on Windows. | 3 | 5 | **15 (High)** | Check and test local `mongod` service, or configure standard connection fallback using a free MongoDB Atlas URI in `.env`. | Provide an automated mock in-memory database fallback or seeded JSON mock service if local MongoDB fails to start during local evaluation. |
-| **RSK-03** | Schedule | **14-Day Timeline Compression:** Spending excessive time on early visual design could leave insufficient time for Admin features and Room Planner. | 4 | 4 | **16 (High)** | Enforce strict daily milestone timeboxing following the Phase 1–5 schedule. Prioritize MVP user stories before styling polish. | Defer non-critical stretch features (such as image file uploads or PDF export) to future release. |
-| **RSK-04** | Asset | **Image Broken Links / External CDN Latency:** External image URLs breaking or encountering rate limits during evaluation. | 3 | 4 | **12 (Med)** | Use curated, direct, high-availability interior design images from reliable CDNs (Unsplash curated furniture collections) with explicit fallback placeholder images. | Store lightweight local SVG and WebP fallback assets directly in `client/public/assets/placeholders/`. |
-| **RSK-05** | Technical | **Customizer Visual Complexity:** Expectation of full 3D rendering vs. practical 2D visual customization. | 3 | 4 | **12 (Med)** | Clearly document that Release 1.0 uses high-fidelity multi-attribute variant swatches, layered image composites, and real-time price math. | Avoid heavy Three.js dependencies; ensure the interactive 2D swatches and price updates are responsive and polished. |
-| **RSK-06** | Security | **Broken Access Control on Admin Routes:** Unauthenticated or regular customer users accessing admin dashboard or mutating catalog items. | 2 | 5 | **10 (Med)** | Implement two-tier middleware on the Express backend (`verifyToken` + `verifyAdminRole`), and route-guard wrappers in React Router (`<AdminRoute>`). | Deny access by default (HTTP 403 Forbidden) if user role !== "admin". |
-| **RSK-07** | Quality | **Responsive Layout Degradation on Mobile:** Canvas or complex catalog filters overflowing on small smartphone screens (<= 375px). | 3 | 3 | **9 (Med)** | Design mobile-first with collapsible drawer filters, responsive flex/grid wrappers, and touch-friendly drag handlers or touch controls for the Room Planner. | Render a dedicated mobile-optimized notice or simplified coordinate adjusters for the Room Planner on screens < 640px. |
+| **RSK-01** | Technical | **Room Planner Complexity:** Custom coordinate math and canvas hit-testing could lead to complex bugs and layout glitches. | 3 | 4 | **12 (Med)** | Use a **React-Managed SVG Canvas**. SVG elements natively support DOM events (`onClick`, `onMouseDown`), CSS transforms (`rotate`, `translate`), and responsive vector scaling without manual canvas raycasting. | If touch drag-and-drop behaves inconsistently on small devices, provide step-based directional controls (move left/right/up/down buttons) alongside drag handles. |
+| **RSK-02** | Database | **MongoDB Atlas / Local Connection Failure:** Network connectivity to MongoDB Atlas cluster fails or local `mongod` daemon is stopped. | 3 | 4 | **12 (Med)** | Configure MongoDB Atlas as the primary database in `.env` with local MongoDB as a secondary option. Include robust connection retry and timeout handling in `db.js`. | **Never silently switch to an in-memory mock and pretend data was persisted.** If MongoDB is completely unreachable, surface a clear connection error banner or an **explicitly labelled read-only demo mode** informing the evaluator that persistence is offline. |
+| **RSK-03** | Security | **XSS & Insecure Token Storage in LocalStorage:** Storing JWT in browser `localStorage` leaves tokens vulnerable to cross-site scripting (XSS). | 2 | 5 | **10 (Med)** | Store JWT strictly inside **HTTP-only, SameSite cookies** (`httpOnly: true, sameSite: 'lax', secure: false in dev`). Client JavaScript cannot access the token. Protect endpoints with ownership checks (`req.user.id === resource.userId`). | On the frontend, configure Axios with `withCredentials: true` and on Express use `cors({ origin: 'http://localhost:5173', credentials: true })` and `cookie-parser`. |
+| **RSK-04** | Asset | **Image Broken Links & Variant Inconsistency:** External image links breaking or displaying unrelated furniture photos for color/material variants. | 3 | 4 | **12 (Med)** | Use a central asset registry (`furnitureMapping.js`) with curated, properly licensed photography and bundled local fallback SVG assets. For customization variants, use real color/material swatches and dynamic SVG/CSS overlay filters rather than swapping to unrelated furniture photos. | If an image fails to load, `onError` handler automatically swaps to the bundled local placeholder image. |
+| **RSK-05** | Schedule | **Timeline Deviation from Frontend Priority:** Over-investing early development time in backend services when the academic evaluation focuses on Frontend Web Development. | 3 | 5 | **15 (High)** | Adopt the **Frontend-First schedule** (Phases 1–4 Days 1–10). Build and validate interactive React components with mock data first. Integrate Express and MongoDB in Phase 5 (Days 11–12). | Timebox backend endpoints to core CRUD operations and standard MVC patterns; avoid complex or speculative backend logic. |
+| **RSK-06** | Access | **Broken Authorization on Admin Endpoints:** Non-admin users mutating products or viewing customer consultation requests. | 2 | 5 | **10 (Med)** | Implement two-layer authorization: backend middleware verifying `req.user.role === 'admin'` and React Router `<AdminRoute>` guards. Return HTTP 403 Forbidden on unauthorized requests. | Deny access by default; require explicit admin role claim on all `/api/v1/admin/*` routes. |
+| **RSK-07** | Responsiveness | **Layout Overflow on Mobile Devices:** Complex catalog filters, customizer swatches, or room planner breaking on mobile screens (<= 375px). | 3 | 3 | **9 (Med)** | Develop mobile-first with collapsible drawer filters, flexible wrapping grids, responsive typography, and touch-optimized buttons. | Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`) and overflow containment (`overflow-x-hidden`) across all views. |
 
 ---
 
-## 3. Fallback Architectures & Decision Protocols
+## 3. Fallback & Architecture Protocols
 
-### Protocol A: Room Planner Canvas Architecture
-- **Primary Architecture:** HTML5 Canvas element managed via React `useRef`, handling top-down rectangular and circular furniture items with bounding-box collision detection.
-- **Fallback Architecture:** If canvas event coordinates encounter pointer inaccuracies across high-DPI screens, pivot to an **SVG-based Room Board** where each furniture piece is an `<svg>` element with SVG `transform="translate(x, y) rotate(deg)"`. SVG provides native DOM event handling (`onClick`, `onMouseDown`) without manual pixel raycasting.
+### Protocol A: Database Availability & Transparency Protocol
+- **Primary Connection:** MongoDB Atlas cloud cluster via `MONGODB_URI` environment variable.
+- **Alternative Connection:** Local MongoDB daemon at `mongodb://127.0.0.1:27017/decora`.
+- **Integrity Rule:** If both connections fail:
+  1. The server must log an explicit, formatted connection error.
+  2. The server must **NOT** silently spin up an in-memory mock database and falsely claim persistence.
+  3. The frontend must display an **explicitly labelled read-only demo mode banner**: *"Notice: Database currently offline. Displaying static demo catalog in read-only mode."*
 
-### Protocol B: Database Resilience
-- **Primary Architecture:** MongoDB running locally on `mongodb://127.0.0.1:27017/decora`.
-- **Fallback Architecture:** A pre-configured MongoDB Atlas connection string in `.env.example` that allows immediate connection without local Windows service dependencies.
+### Protocol B: Authentication & Local CORS Configuration Protocol
+- **Cookie Security:**
+  ```javascript
+  res.cookie('token', token, {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+  ```
+- **Local Dev CORS Configuration:**
+  - Express Server:
+    ```javascript
+    app.use(cors({
+      origin: 'http://localhost:5173',
+      credentials: true
+    }));
+    ```
+  - React Client:
+    ```javascript
+    // Axios global configuration
+    axios.defaults.baseURL = 'http://localhost:5000/api/v1';
+    axios.defaults.withCredentials = true;
+    ```
 
-### Protocol C: Image Asset Strategy
-- **Primary Architecture:** High-resolution interior architecture images hosted via Unsplash CDN with exact resolution query parameters (`?auto=format&fit=crop&w=800&q=80`).
-- **Fallback Architecture:** Bundled local fallback SVG/WebP assets inside `client/public/images/` to guarantee zero missing images even when offline.
+### Protocol C: Image Handling & Variant Authenticity Protocol
+- **Central Asset Registry:** All image references are resolved through a dedicated `client/src/assets/furnitureMapping.js` file.
+- **Variant Handling Rule:** Customization variants (fabrics, woods, metals) modify material texture swatches and apply coordinated SVG/CSS filter overlays to the genuine furniture asset. Unrelated furniture photos must never be swapped in as a "variant".
+- **Bundled Fallback:** Local SVG placeholders stored in `client/public/placeholders/` guarantee zero broken image icons even during complete network disconnects.

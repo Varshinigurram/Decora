@@ -1,46 +1,52 @@
 # Décora – 14-Day Development Plan & Implementation Schedule
 
-**Document Version:** 1.0.0  
+**Document Version:** 1.1.0  
 **Phase:** Phase 0 (Planning & Requirements Engineering)  
-**Academic Target:** Frontend Web Development Capstone  
-**Target Delivery Window:** 14 Calendar Days
+**Academic Subject:** Frontend Web Development (Primary Focus)  
+**Target Delivery Window:** 14 Calendar Days  
+**Standardized Conventions:** Currency in INR (₹), Metric units (cm / m), API prefix `/api/v1`
 
 ---
 
 ## 1. Project Phasing & Milestone Roadmap
 
+Because this capstone is evaluated primarily on **Frontend Web Development**, the schedule adopts a **Frontend-First development order**. High-fidelity visual components, design systems, and client interactions are established and validated first with a central mock asset registry, followed by backend REST services and MongoDB Atlas integration.
+
 ```mermaid
 flowchart TD
-    subgraph Phase0 ["Phase 0: Planning & Documentation (Day 1)"]
-        D1["Day 1: Requirements, User Stories, Risk Register & Technical Decisions"]
+    subgraph Phase0 ["Phase 0: Planning & Requirements (Day 1)"]
+        D1["Day 1: Requirements, User Stories, Risk Register & Architectural Decisions"]
     end
 
-    subgraph Phase1 ["Phase 1: Backend Architecture & Core Foundation (Days 2–4)"]
-        D2["Day 2: Express Server Setup, MongoDB Connection & Mongoose Schemas"]
-        D3["Day 3: JWT Auth Routes, Role Middleware & Seed Data Generation"]
-        D4["Day 4: Core REST Endpoints (Products, Inspiration, Wishlist & Consultations)"]
+    subgraph Phase1 ["Phase 1: Research & Gap Analysis (Day 2)"]
+        D2["Day 2: Competitor Benchmarking, User Flows & Feature Gap Analysis"]
     end
 
-    subgraph Phase2 ["Phase 2: Frontend Scaffolding & Core Discovery (Days 5–7)"]
-        D5["Day 5: React + Vite Setup, Tailwind Theme System & Base Components"]
+    subgraph Phase2 ["Phase 2: UI/UX Design & Asset Prep (Days 3–4)"]
+        D3["Day 3: Design System Tokens, Typography, Color Palette (Warm Neutrals)"]
+        D4["Day 4: Asset Preparation, Central Image Mapping & Local Fallback SVGs"]
+    end
+
+    subgraph Phase3 ["Phase 3: React Foundation & Core Pages (Days 5–7)"]
+        D5["Day 5: React + Vite Setup, Tailwind Theme & Base UI Primitives"]
         D6["Day 6: Responsive Navbar, Footer, Hero & Landing Page (FR-01)"]
-        D7["Day 7: Furniture Catalog, Real-Time Filters, Search & Details (FR-03, FR-04)"]
+        D7["Day 7: Furniture Catalog & Product Detail Pages (FR-03, FR-04)"]
     end
 
-    subgraph Phase3 ["Phase 3: Interactive Experiences & Personalization (Days 8–10)"]
-        D8["Day 8: Inspiration Portfolio & 'Shop the Look' Deep Links (FR-02)"]
-        D9["Day 9: Interactive Furniture Customizer & Dynamic Price Formula (FR-05)"]
-        D10["Day 10: 2D Room Planner Canvas (Drag, Drop, Rotate & Cost Aggregation) (FR-08)"]
+    subgraph Phase4 ["Phase 4: Interactive Features & Planning (Days 8–10)"]
+        D8["Day 8: Interior Inspiration Gallery & 'Shop the Look' (FR-02)"]
+        D9["Day 9: Furniture Customizer & Dynamic Pricing Formula (FR-05)"]
+        D10["Day 10: React-Managed SVG 2D Room Planner (FR-08)"]
     end
 
-    subgraph Phase4 ["Phase 4: Design Boards, Wishlist & Consultations (Days 11–12)"]
-        D11["Day 11: Personal Design Boards & Wishlist Persistent Management (FR-06, FR-07)"]
-        D12["Day 12: Consultation Intake Portal & Confirmation Feedback (FR-10)"]
+    subgraph Phase5 ["Phase 5: Backend & Integration (Days 11–12)"]
+        D11["Day 11: Express API (/api/v1), Mongoose Schemas & MongoDB Atlas Setup"]
+        D12["Day 12: Secure HTTP-Only Cookie Auth, Wishlist & Board API Integration"]
     end
 
-    subgraph Phase5 ["Phase 5: Admin Dashboard, Audit & Final Polish (Days 13–14)"]
-        D13["Day 13: Protected Admin Portal, Product CRUD & Consultation Pipeline (FR-11)"]
-        D14["Day 14: Cross-Device Responsiveness, Security Audit, Final Testing & Demo Prep"]
+    subgraph Phase6 ["Phase 6: Admin Basics, Testing & Submission (Days 13–14)"]
+        D13["Day 13: Protected Admin Portal, Product CRUD & Consultation Status (FR-11)"]
+        D14["Day 14: Cross-Device Responsiveness, Security Audit & Academic Submission"]
     end
 
     Phase0 --> Phase1
@@ -48,53 +54,59 @@ flowchart TD
     Phase2 --> Phase3
     Phase3 --> Phase4
     Phase4 --> Phase5
+    Phase5 --> Phase6
 ```
 
 ---
 
-## 2. Day-by-Day Implementation Breakdown
+## 2. Day-by-Day Implementation Schedule
 
-| Day | Focus Area | Deliverables & Tasks | Success Verification |
+| Day | Phase | Milestone Tasks | Deliverables & Verification |
 |---|---|---|---|
-| **Day 1** | **Phase 0: Planning & Blueprint** | Finalize Requirements, User Stories, Development Plan, and Risk Register. Resolve technical decisions. | All 4 docs created and approved in `/docs`. |
-| **Day 2** | **Backend Setup & Schemas** | Initialize Express backend, connect to MongoDB, define Mongoose models (`User`, `Product`, `Category`, `RoomDesign`, `Customization`, `DesignBoard`, `RoomPlan`, `Consultation`, `Wishlist`). | Database connects cleanly with schema validation. |
-| **Day 3** | **Auth & Database Seeding** | Implement JWT authentication (`/api/auth/register`, `/api/auth/login`, `/api/auth/me`), password hashing, and populate MongoDB with realistic sample data. | Postman/curl tests confirm registration, token issuance, and seeded products. |
-| **Day 4** | **API Route Implementation** | Build REST controllers for Products (filter, search, sort), Inspiration designs, Consultations, and user-specific endpoints (Wishlist, Boards). | All core REST endpoints return expected JSON payloads with proper status codes. |
-| **Day 5** | **Frontend Scaffolding & Theme** | Initialize Vite + React project, configure Tailwind CSS with warm architectural palette (creams, sands, warm slate, rich wood tones), setup Axios API client. | React app renders with Tailwind styles, typography, and base layout primitives. |
-| **Day 6** | **Homepage & Discovery (`FR-01`)** | Build Navbar (responsive mobile drawer), Hero banner, Room Categories grid, Featured products slider, Testimonials, and Footer. | Homepage renders responsively across desktop, tablet, and mobile with no overflow. |
-| **Day 7** | **Catalog & Product Details (`FR-03`, `FR-04`)** | Create Catalog view with dynamic filtering (price, category, style, material), instant search bar, sorting dropdown, and full Product Detail view. | Filtering and search work smoothly in real time; product details display specs and image galleries. |
-| **Day 8** | **Inspiration Portfolio (`FR-02`)** | Build Inspiration gallery with room/style filters, design detail modals/views, and "Shop the Look" linked furniture lists. | Users can browse curated rooms and click through to associated furniture pieces. |
-| **Day 9** | **Furniture Customizer (`FR-05`)** | Build interactive customizer page with swatch pickers (fabrics, wood finishes, metal accents), dynamic price estimation math, and reset/save functionality. | Changing swatches updates preview highlights and calculates prices dynamically. |
-| **Day 10** | **2D Room Planner (`FR-08`)** | Implement HTML5 Canvas / SVG top-down room planner with customizable room dimensions, palette drag-and-drop, 45°/90° rotation, collision indicator, and live budget tally. | Users can configure room bounds, position furniture, rotate items, detect overlaps, and save layouts. |
-| **Day 11** | **Wishlist & Design Boards (`FR-06`, `FR-07`)** | Connect Wishlist UI with backend persistence. Build Design Boards module allowing creation of custom project boards and total cost calculation. | Authenticated customers can add/remove wishlist items and organize design boards with synced MongoDB data. |
-| **Day 12** | **Consultation Intake (`FR-10`)** | Implement multi-step consultation questionnaire (style preferences, budget bracket, dimensions, notes, contact data) with client-side validation. | Form submits valid payloads to backend, returns confirmation reference code, and clears form state. |
-| **Day 13** | **Admin Dashboard (`FR-11`)** | Build protected `/admin` portal: summary stat cards, Product CRUD table with add/edit modal, and Consultation request status updater. | Admin can add new products, edit prices, delete items, and change consultation status (`New` $\rightarrow$ `Contacted`). |
-| **Day 14** | **Testing, Audit & Final Polish** | Perform cross-browser and mobile responsive testing, verify error handling and loading skeletons, conduct code cleanup, and prepare presentation walkthrough. | Zero console errors, fully responsive layout, robust auth guards, and complete academic submission readiness. |
+| **Day 1** | **Phase 0: Planning** | Finalize Requirements, User Stories, Development Schedule, Risk Register, and standardized conventions. | Approved Phase 0 docs in `/docs`. Zero code or scaffolded folders. |
+| **Day 2** | **Phase 1: Research** | Conduct competitor analysis (IKEA, West Elm, Urban Ladder); document gap analysis and refined user journey from inspiration to room planning. | Competitor & UX gap analysis summary documenting UI layout decisions. |
+| **Day 3** | **Phase 2: UI/UX Design** | Establish typography, spacing, and warm architectural palette (creams, warm whites, rich walnut, matte black, linen). Define button, card, modal, and badge component tokens. | Design tokens defined; wireframes/component specs ready for implementation. |
+| **Day 4** | **Phase 2: Asset Prep** | Curate licensed furniture photography, organize fabric/finish textures, and establish central asset registry (`furnitureMapping.js`) with bundled local SVG fallbacks. | Central asset catalog mapped with verified URLs and local placeholders. |
+| **Day 5** | **Phase 3: React Base** | Initialize React + Vite project, configure Tailwind CSS with custom palette, establish directory architecture, routing skeleton, and reusable base UI components. | Clean build (`npm run build`); Tailwind utility classes and theme tokens verified. |
+| **Day 6** | **Phase 3: Core Home** | Implement responsive Navigation Bar (desktop & mobile drawer), Hero banner, Category showcase, Featured pieces, and Footer (`FR-01`). | Landing page renders seamlessly with zero horizontal overflow on mobile viewports. |
+| **Day 7** | **Phase 3: Catalog** | Build Furniture Catalog (`FR-03`) with instant search, multi-facet filtering, INR price sorting, and Product Details page (`FR-04`) with metric dimensions and specs. | Catalog filters and search function smoothly in real time with mock data; details page displays gallery and specifications. |
+| **Day 8** | **Phase 4: Inspiration** | Build Interior Inspiration Gallery (`FR-02`) with room and style filters, detail modal, and "Shop the Look" linked furniture lists. | Users can explore curated rooms and click through directly to corresponding furniture items. |
+| **Day 9** | **Phase 4: Customizer** | Build Interactive Furniture Customizer (`FR-05`) with fabric/wood swatches, dynamic INR price formula: $\text{Price} = \text{Base} + \Delta\text{Fabric} + \Delta\text{Finish} + (\text{Size Factor} \times \text{Base})$, and reset capability. | Customizer updates visual overlays and recalculates INR pricing in real time. |
+| **Day 10** | **Phase 4: Room Planner** | Implement React-Managed SVG 2D Room Planner (`FR-08`): customizable room dimensions in meters, furniture palette, drag/drop placement, 45°/90° rotation, and live room budget tally. | SVG canvas allows positioning, rotating, and tallying furniture costs smoothly with zero external canvas overhead. |
+| **Day 11** | **Phase 5: Backend API** | Initialize Express backend with `/api/v1` routes; configure MongoDB Atlas primary connection and local MongoDB fallback; define Mongoose schemas and seed script. | Server connects to database; seeds realistic furniture and user accounts via `/api/v1/products`. |
+| **Day 12** | **Phase 5: Auth & Sync** | Implement secure HTTP-only cookie authentication (`/api/v1/auth`), role verification, and connect client state for Wishlist (`FR-06`), Design Boards (`FR-07`), and Consultations (`FR-10`). | Authenticated users can log in, sync wishlists, and submit consultation forms with database persistence. |
+| **Day 13** | **Phase 6: Admin Portal** | Build protected Admin Dashboard (`FR-11`): summary metrics, Product CRUD table with add/edit modals, and Consultation status management pipeline (`New` $\rightarrow$ `Contacted` $\rightarrow$ `Completed`). | Admin users can manage products and update consultation statuses with role guard protection. |
+| **Day 14** | **Phase 6: Polish & Submit** | Cross-device testing (mobile, tablet, desktop), security and input validation audit, Lighthouse performance review, code cleanup, and academic project submission packaging. | Zero console errors, fully responsive UI, documented API endpoints, ready for evaluation. |
 
 ---
 
-## 3. Scope Management: MVP vs. Complex Features
+## 3. Scope Management: MVP vs. Deferred Scope
 
-To ensure successful delivery within the tight 14-day academic timeline without burning cycles on high-risk dependencies, feature scope is strictly partitioned:
+To protect the 14-day academic delivery window while maximizing Frontend Web Development evaluation points, features are strictly partitioned:
 
-### ✅ In-Scope MVP Features (Prioritized for 14-Day Delivery)
-1. **Interactive 2D Room Planner:** Built using a reliable, lightweight HTML5 Canvas or SVG approach. Includes drag, drop, rotate, basic bounding-box collision warnings, and live budget calculation.
-2. **Interactive Furniture Customizer:** High-fidelity multi-attribute selector (materials, finishes, sizes) with real-time dynamic formula-based price computation and visual swatch feedback.
-3. **Full-Stack REST Architecture:** Node.js/Express backend with JWT auth, password encryption, and MongoDB Mongoose models.
-4. **Curated Inspiration Portfolio:** Visual room showcases linked directly to catalog products ("Shop the Look").
-5. **Personal Design Boards & Wishlist:** Multi-board project organization with aggregate cost tallying.
-6. **Admin Management Portal:** Product CRUD and Consultation management pipeline.
+### ✅ Core MVP Features (Must Have - High Priority)
+- **Homepage & Navigation (`FR-01`):** Complete brand experience, mobile drawer, hero, and category highlights.
+- **Interior Inspiration (`FR-02`):** Curated design portfolios with style filtering and "Shop the Look".
+- **Furniture Catalog (`FR-03`):** Search, faceted filters (room, style, material), and INR price sorting.
+- **Product Details (`FR-04`):** Metric dimensions ($W \times D \times H\text{ cm}$), specifications, and multi-angle gallery.
+- **Furniture Customization (`FR-05`):** Visual swatch selectors and real-time dynamic pricing calculation in INR (₹).
+- **Authentication (`FR-09`):** Secure HTTP-only cookies, password hashing with bcrypt, and role guards.
+- **Wishlist (`FR-06`):** One-click toggle and MongoDB persistence.
+- **Design Boards (`FR-07`):** Multi-board project organization with aggregate cost tallying in INR (₹).
+- **Consultation Intake (`FR-10`):** Multi-step consultation questionnaire with metric room inputs and budget tiers.
 
-### ⚠️ Scope Adjustments & Simplifications (Reasons Explained)
-- **2D Canvas instead of 3D WebGL / Three.js:**
-  - *Reason:* 3D model loading (GLTF/GLB), lighting engines, camera controls, and texture mapping would consume 7–10 days alone with high risk of browser crashes. A 2D top-down plan provides superior architectural utility for room layout planning and budget estimation within the academic deadline.
-- **Curated High-Res Unsplash CDN Assets instead of Cloudinary/S3 Uploads:**
-  - *Reason:* Setting up external cloud storage buckets, API keys, and multipart form handlers introduces external failure points and credential risks. Using high-quality curated CDN image URLs with local fallback images ensures 100% reliable image loading and zero external billing or API quota constraints.
-- **Client-Side Visual Swatches & Composite Overlays instead of Procedural 3D Texturing:**
-  - *Reason:* High-quality visual indicators, layered image toggles, and dynamic color/texture swatch cards provide immediate feedback without rendering latency.
+### 🔶 Secondary Features (Should Have - Scheduled for Days 10 & 13)
+- **2D Room Planner (`FR-08`):** Top-down React-managed SVG canvas with drag/drop, rotation, and live budget counter.
+- **Basic Admin Product Management (`FR-11.1–11.3`):** Product CRUD operations and stock availability toggles.
+- **Consultation Status Management (`FR-11.4`):** Reviewing submissions and updating pipeline stages.
 
-### 🚫 Strictly Excluded from Release 1.0 (Future Roadmap)
-- Augmented Reality (AR) mobile camera projections.
-- AI-based room layout generation (e.g., automated neural network furniture placement).
-- Live financial payment gateway transactions (Stripe, PayPal, etc.).
-- Multi-user real-time collaborative editing (WebSockets/CRDTs).
+### 🔷 Stretch Features (Could Have - If Time Permits on Day 14)
+- **Bounding-Box Collision Detection:** Visual highlight on overlapping SVG furniture elements.
+- **Advanced Admin Analytics:** Graphical breakdown of style popularity and customization trends.
+- **Export Options:** Downloadable layout snapshot or PDF summary.
+
+### 🚫 Strictly Excluded from Release 1.0 (Won't Have)
+- 3D WebGL / Three.js spatial simulations.
+- Augmented Reality (AR) mobile camera integration.
+- AI-automated generative interior planning.
+- Live payment gateway processing (Stripe / Razorpay).
