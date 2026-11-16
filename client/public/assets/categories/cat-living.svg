@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <rect width="800" height="600" fill="#F6F3ED"/>
+  <!-- Floor line -->
+  <line x1="0" y1="460" x2="800" y2="460" stroke="#D8C8B5" stroke-width="2"/>
+  <rect x="0" y="460" width="800" height="140" fill="#EAE4D9"/>
+  <!-- Wall Art Frame -->
+  <rect x="280" y="80" width="240" height="160" fill="#FFFFFF" stroke="#D8C8B5" stroke-width="2"/>
+  <circle cx="400" cy="160" r="45" fill="#EDE9DF" stroke="#A58B70" stroke-width="1.5"/>
+  <!-- Armchair / Lounge Sofa -->
+  <g transform="translate(240, 290)">
+    <!-- Base Shadow -->
+    <ellipse cx="160" cy="175" rx="190" ry="16" fill="#292824" fill-opacity="0.08"/>
+    <!-- Oak Plinth -->
+    <rect x="20" y="150" width="280" height="14" rx="2" fill="#A58B70"/>
+    <!-- Main Cushion -->
+    <rect x="30" y="90" width="260" height="62" rx="4" fill="#F4F1EA" stroke="#D8C8B5" stroke-width="1"/>
+    <!-- Backrest -->
+    <rect x="40" y="40" width="240" height="52" rx="4" fill="#EFECE5" stroke="#D8C8B5" stroke-width="1"/>
+    <!-- Armrests -->
+    <rect x="15" y="40" width="35" height="112" rx="3" fill="#EAE5DC" stroke="#D8C8B5" stroke-width="1"/>
+    <rect x="270" y="40" width="35" height="112" rx="3" fill="#EAE5DC" stroke="#D8C8B5" stroke-width="1"/>
+  </g>
+  <!-- Minimalist Floor Lamp -->
+  <g transform="translate(140, 200)">
+    <line x1="40" y1="260" x2="40" y2="40" stroke="#35483D" stroke-width="2.5"/>
+    <ellipse cx="40" cy="260" rx="20" ry="4" fill="#35483D"/>
+    <path d="M15 40 L65 40 L55 10 L25 10 Z" fill="#F6F3ED" stroke="#35483D" stroke-width="1.5"/>
+  </g>
+</svg>

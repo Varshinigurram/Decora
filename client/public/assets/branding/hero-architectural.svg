@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="100%" height="100%">
+  <defs>
+    <linearGradient id="wallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F3ED"/>
+      <stop offset="60%" stop-color="#EDE7DD"/>
+      <stop offset="100%" stop-color="#E2D9CC"/>
+    </linearGradient>
+    <linearGradient id="sunbeam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#D8C8B5" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="woodFinish" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8C7355"/>
+      <stop offset="50%" stop-color="#A58B70"/>
+      <stop offset="100%" stop-color="#7A6348"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Architecture Wall -->
+  <rect width="1600" height="900" fill="url(#wallGrad)"/>
+
+  <!-- Floor Surface -->
+  <polygon points="0,680 1600,680 1600,900 0,900" fill="#EAE4D9"/>
+  <line x1="0" y1="680" x2="1600" y2="680" stroke="#D8C8B5" stroke-width="2"/>
+
+  <!-- Architectural Large Window Aperture -->
+  <rect x="180" y="80" width="480" height="540" fill="#FCFAF6" stroke="#D8C8B5" stroke-width="3"/>
+  <line x1="420" y1="80" x2="420" y2="620" stroke="#D8C8B5" stroke-width="2"/>
+  <line x1="180" y1="350" x2="660" y2="350" stroke="#D8C8B5" stroke-width="2"/>
+
+  <!-- Warm Diffused Sunbeam -->
+  <polygon points="420,80 660,80 1200,900 850,900" fill="url(#sunbeam)"/>
+
+  <!-- Textured Wool Floor Rug -->
+  <polygon points="520,720 1380,720 1480,850 420,850" fill="#EDE9DF" stroke="#D8C8B5" stroke-width="1.5"/>
+
+  <!-- Minimalist Low-Profile Sectional Sofa -->
+  <g id="heroSofa" transform="translate(680, 520)">
+    <!-- Base Shadow -->
+    <ellipse cx="260" cy="180" rx="300" ry="24" fill="#292824" fill-opacity="0.08"/>
+    <!-- Wood Plinth -->
+    <rect x="0" y="150" width="520" height="18" rx="2" fill="url(#woodFinish)"/>
+    <!-- Sofa Cushions (Cream Bouclé) -->
+    <rect x="10" y="90" width="500" height="65" rx="6" fill="#F8F6F0" stroke="#D8C8B5" stroke-width="1"/>
+    <rect x="20" y="40" width="480" height="55" rx="6" fill="#F4F1EA" stroke="#D8C8B5" stroke-width="1"/>
+    <!-- Left Armrest -->
+    <rect x="0" y="40" width="60" height="115" rx="4" fill="#ECE7DE" stroke="#D8C8B5" stroke-width="1"/>
+    <!-- Right Armrest -->
+    <rect x="460" y="40" width="60" height="115" rx="4" fill="#ECE7DE" stroke="#D8C8B5" stroke-width="1"/>
+    <!-- Cushion Seam Divider -->
+    <line x1="260" y1="42" x2="260" y2="154" stroke="#D8C8B5" stroke-width="1.5"/>
+  </g>
+
+  <!-- Sculptural Low Walnut Coffee Table -->
+  <g id="heroCoffeeTable" transform="translate(780, 680)">
+    <ellipse cx="140" cy="50" rx="150" ry="12" fill="#292824" fill-opacity="0.07"/>
+    <!-- Pillar Legs -->
+    <rect x="40" y="25" width="24" height="28" rx="3" fill="#6B543D"/>
+    <rect x="210" y="25" width="24" height="28" rx="3" fill="#6B543D"/>
+    <!-- Organic Table Top -->
+    <ellipse cx="140" cy="24" rx="140" ry="26" fill="#7A6046" stroke="#5A442E" stroke-width="1"/>
+  </g>
+
+  <!-- Sculptural Ceramic Vase & Botanical Branch -->
+  <g id="heroVase" transform="translate(860, 640)">
+    <ellipse cx="20" cy="50" rx="16" ry="6" fill="#292824" fill-opacity="0.1"/>
+    <path d="M12 50 C10 40 4 35 14 20 C18 14 22 14 26 20 C36 35 30 40 28 50 Z" fill="#E8E2D5" stroke="#C4B7A5" stroke-width="1"/>
+    <!-- Minimalist Foliage Branch -->
+    <path d="M20 20 Q15 -30 35 -70 Q45 -90 60 -110" stroke="#35483D" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="35" cy="-70" r="5" fill="#35483D"/>
+    <circle cx="50" cy="-95" r="4.5" fill="#35483D"/>
+    <circle cx="60" cy="-110" r="4" fill="#35483D"/>
+  </g>
+
+  <!-- Foreground Editorial Caption Overlay Marker -->
+  <g transform="translate(180, 800)">
+    <text font-family="'Cormorant Garamond', Georgia, serif" font-size="28" font-style="italic" fill="#292824" letter-spacing="1">
+      "Architecture in Equilibrium — The Living Sanctuary"
+    </text>
+    <text font-family="'Inter', sans-serif" font-size="11" font-weight="600" fill="#35483D" letter-spacing="2" y="24">
+      COLLECTION 2026 • DÉCORA STUDIO
+    </text>
+  </g>
+</svg>
