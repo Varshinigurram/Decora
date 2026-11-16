@@ -103,8 +103,8 @@ This document specifies the complete user stories and acceptance criteria for D�
 - **Acceptance Criteria:**
   - **Valid Option Combinations:** Only compatible options are selectable (e.g., specific premium fabrics pair with designated solid wood finishes; incompatible combinations are visibly disabled with clear helper text).
   - **Authentic Variant Assets:** Customizer uses genuine high-resolution material texture swatches and coordinated SVG/CSS visual overlays on the product. Mismatched or unrelated furniture photos are **never** displayed as variant previews.
-  - **Dynamic Price Updates:** Price indicator updates instantaneously upon option changes using the formula:
-    $$\text{Final Price (₹)} = \text{Base Price} + \Delta\text{Fabric} + \Delta\text{Finish} + (\text{Size Factor} \times \text{Base Price})$$
+  - **Dynamic Price Updates:** Price indicator updates instantaneously upon option changes using the additive formula:
+    $$\text{Final Price (₹)} = \text{Base Price} + \Delta\text{Fabric} + \Delta\text{Finish} + \Delta\text{Size}$$
   - **Reset Behavior:** "Reset to Defaults" button immediately restores original base materials, base dimensions, and base price.
   - **Configuration Retention:** Selected configuration persists in React component state across active navigation and, for authenticated users, persists to `/api/v1/customizations`.
   - Unauthenticated guests clicking "Save Configuration" are prompted to log in or register.

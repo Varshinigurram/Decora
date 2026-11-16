@@ -1,250 +1,210 @@
-# Décora – Phase 1: Competitor Research & Gap Analysis (Day 2)
+# Décora – Phase 1: Competitor Research & Gap Analysis (Day 2 - Technical Refinement)
 
-**Document Version:** 1.0.0  
+**Document Version:** 1.2.0  
 **Phase:** Phase 1 (Research & Gap Analysis)  
 **Academic Subject:** Frontend Web Development (Primary Focus)  
 **Standardized Conventions:** Currency in INR (₹), Metric units (cm / m), API prefix `/api/v1`  
-**Benchmarked Competitors:** IKEA, Pepperfry, Urban Ladder, West Elm
+**Benchmarked Competitors:** IKEA India, Pepperfry, Urban Ladder, West Elm  
+**Evaluation Period:** November 2026
 
 ---
 
-## 1. Executive Summary
+## 1. Executive Summary & Research Methodology
 
-To establish an exceptional frontend user experience for **Décora**, Phase 1 investigated four major industry benchmarks spanning global retail giants, Indian furniture marketplaces, and high-end design houses.
+This study benchmarks four major platforms across global modular retail, Indian online furniture marketplaces, and high-end design houses. The research methodology strictly distinguishes between:
+- **Verified Facts:** Directly observable capabilities, publicly documented features, and official offerings.
+- **Subjective Usability Observations:** Interaction ergonomics, visual cognitive load, and observed journey friction points.
 
-While current market platforms excel in specific silos—IKEA in modular breadth, Pepperfry in catalog volume, Urban Ladder in solid wood craft, and West Elm in aspirational styling—they exhibit noticeable friction points:
-1. **Separation of Inspiration and Action:** Inspiration galleries rarely transition smoothly into customized product selections or spatial planning.
-2. **Aggressive Commercial Noise vs. Editorial Calm:** Commercial Indian marketplaces suffer from banner overload, pop-ups, and countdown timers that degrade design immersion.
-3. **Opaque or Gated Customization:** Customization is either locked behind offline appointments (Pepperfry, Urban Ladder) or conceals the mathematical logic behind price surges (West Elm).
-4. **Over-Engineered Spatial Planners:** 3D planners (IKEA Kreativ, West Elm Room Planner) are computationally heavy, difficult to control on mobile viewports, and carry steep learning curves.
+A primary finding is that competitors offer sophisticated tools in isolation—such as 3D room planning, custom upholstery, or professional interior design services. However, these tools exist in **siloed workflows** separated from everyday catalog discovery.
 
-**Décora's Strategic Opportunity:** Unify discovery, authentic customization with transparent INR (₹) price calculations, thematic design boards with aggregated budgets, and a lightweight React-managed SVG 2D room planner within a clean, warm architectural aesthetic.
+### Décora's Core Value Proposition
+Décora’s differentiation is defined by an **unbroken, self-service consumer journey**:
+$$\text{Interior Inspiration} \longrightarrow \text{Product Discovery} \longrightarrow \text{Furniture Customization} \longrightarrow \text{Transparent Pricing (₹)} \longrightarrow \text{Personal Design Boards} \longrightarrow \text{2D Room Planning}$$
+
+Rather than claiming that every individual feature has never existed in isolation, Décora provides a connected, responsive web experience where users can move from design concept to customized furniture and spatial planning without jumping into complex CAD tools, booking offline appointments, or enduring sales calls.
 
 ---
 
-## 2. Competitor Comparison Matrix
+## 2. Evidence Register
 
-| Evaluation Dimension | IKEA (India) | Pepperfry | Urban Ladder | West Elm | Décora (Target Architecture) |
+The following register documents the exact pages, official features, access dates, and factual classifications evaluated for each competitor.
+
+| Competitor | Evaluated Page / Feature | Direct Source URL | Access Date | Documented Observation Reference | Classification |
 |---|---|---|---|---|---|
-| **Primary Market / Aesthetic** | Global Scandinavian; Functional & mass-market. | Indian marketplace; Multi-brand, promotion-heavy. | Curated Indian contemporary; Solid wood & space-saving. | Global high-end modern; Aspirational & editorial. | **Warm Architectural Modern; Editorial, tactile & serene.** |
-| **Visual Hierarchy & Tone** | Clean, grid-based, utilitarian corporate blue/yellow. | High visual clutter; commercial sales badges & pop-ups. | Polished, clean catalog cards; balanced whitespace. | Premium editorial; serif headers, rich neutral tones. | **Warm neutrals (linen, cream, rich walnut, matte metal).** |
-| **Catalog & Navigation** | Mega-menus by room and product; thousands of SKUs. | Dense multi-tier dropdowns; faceted brand filters. | Streamlined categories; room-centric collections. | Curated by room and aesthetic lookbooks; refined menus. | **Faceted category filters + mobile drawer navigation.** |
-| **Search & Filtering** | Fast real-time suggestions; multi-attribute filters. | Granular filters (wood type, brand, discounts, EMI). | Clear filters for wood finish, room, and dimensions. | Curated filters by material, fabric grade, and size. | **Instant text search, material chips, INR price slider.** |
-| **Product Detail Page (PDP)** | Modular exploded views, packaging specs, assembly PDFs. | Promotion badges, EMI calculator, pin-code delivery check. | 360° product views, dimension diagrams, wood care notes. | Rich fabric galleries, lifestyle imagery, styling tips. | **Multi-angle gallery, metric specs ($cm$, $kg$), direct customizer.** |
-| **Customization Experience** | Modular system builders (PAX, BESTÅ); rigid colorways. | Customization delegated to offline Studio consultations. | Limited online variants (2–3 fixed wood/fabric shades). | Extensive fabric & finish swatches; free physical swatches. | **Interactive swatches, authentic SVG overlays, instant INR formula.** |
-| **Pricing Transparency** | Fixed flat pricing; modular parts added separately. | Complicated discounted pricing, coupon pop-ups, dynamic EMIs. | Transparent base pricing; limited variable pricing. | Pricing varies drastically by fabric grade without formula clarity. | **Transparent dynamic formula:** $\text{Base} + \Delta\text{Mat} + (\text{Size} \times \text{Base})$. |
-| **Inspiration & "Shop the Look"** | Extensive "Rooms" portal; clickable hotspots on photos. | Static curated living room galleries with linked items. | "Home Interiors" lookbooks; primarily offline execution. | "Room Ideas" lookbooks categorized by aesthetic themes. | **Curated styles (Japandi, Scandinavian) with 1-click catalog links.** |
-| **Wishlist & Saving** | Flat shopping lists; no moodboard budget aggregation. | Basic "Shortlist" heart icon; no multi-board organization. | Simple wishlist; no spatial or budget aggregation. | "Favorites" list; shareable with Design Crew stylists. | **Thematic Design Boards with live aggregated budget in ₹.** |
-| **Room Planning Tool** | *IKEA Kreativ* (3D LiDAR/web scan); heavy & app-centric. | In-store 3D consultant renders; no self-service tool. | Professional 3D consultation; no consumer web planner. | Web 3D room planner; heavy memory usage, desktop-centric. | **Lightweight React-managed SVG 2D Canvas with live ₹ tally.** |
-| **Consultation Journey** | Online booking for in-store kitchen/wardrobe planning. | "Studio Pepperfry" booking for physical store visits. | "Home Interiors" consultation booking form. | "Design Crew" free virtual/in-store appointments. | **Dual intake: Instant guest request + Account-linked customer flow.** |
+| **IKEA India** | Main Storefront & Navigation | [ikea.com/in/en/](https://www.ikea.com/in/en/) | Nov 2026 | Hierarchical mega-menu categorized by room and functional product category; real-time search suggestions with product thumbnails. | **Verified Fact** |
+| **IKEA India** | Rooms Inspiration Hub | [ikea.com/in/en/rooms/](https://www.ikea.com/in/rooms/) | Nov 2026 | Curated room photography featuring interactive hotspot pins that open overlay cards displaying product name, price in INR, and quick-add actions. | **Verified Fact** |
+| **IKEA India** | IKEA Kreativ Web Tool | [ikea.com/in/en/planners/](https://www.ikea.com/in/en/planners/) | Nov 2026 | Browser-based WebGL tool allowing users to scan/upload rooms, place to-scale 3D furniture, save designs ("Save", "Save As"), and generate shareable Remix links tied to an IKEA account. | **Verified Fact** |
+| **IKEA India** | Product Detail Page (PDP) | Sample: POÄNG Armchair PDP | Nov 2026 | Full dimension tables ($cm$), net package weights ($kg$), and downloadable assembly instruction PDFs. Customization is limited to modular configurations and fixed cushions. | **Verified Fact** |
+| **IKEA India** | Catalog Density & Visual Tone | Storewide UI | Nov 2026 | Utilitarian visual presentation; high product volume can induce cognitive fatigue during aesthetic curation. | **Subjective Usability Observation** |
+| **Pepperfry** | Marketplace Catalog & Filters | [pepperfry.com](https://www.pepperfry.com/) | Nov 2026 | Granular filter sidebar with metric/imperial dimension sliders, wood species (Sheesham, Teak, Mango), brands, and discount filters. | **Verified Fact** |
+| **Pepperfry** | Modular Wardrobes & Customization | [pepperfry.com/furniture/wardrobes.html](https://www.pepperfry.com/furniture/wardrobes.html) | Nov 2026 | Made-to-order options available for select modular storage and partner sofa lines; standard catalog pieces are purchased as fixed SKUs. | **Verified Fact** |
+| **Pepperfry** | Studio Pepperfry | [pepperfry.com/studios.html](https://www.pepperfry.com/studios.html) | Nov 2026 | Physical experience centers in major Indian cities offering free in-person 3D design consultancy and material sample inspections. | **Verified Fact** |
+| **Pepperfry** | Marketplace UI & Merchandising | Storewide UI | Nov 2026 | High visual clutter: promotional banners, countdown timers, and discount pop-ups compete with furniture presentation. Multi-vendor photography quality varies. | **Subjective Usability Observation** |
+| **Urban Ladder** | Main Catalog & PDPs | [urbanladder.com](https://www.urbanladder.com/) | Nov 2026 | Contemporary solid wood furniture tailored to Indian apartments; PDPs provide dimension diagrams, weight capacities, and care instructions. Freestanding items feature fixed finish variants (typically 2–3 presets). | **Verified Fact** |
+| **Urban Ladder** | Home Interiors Consultation | [urbanladder.com/interiors](https://www.urbanladder.com/interiors) | Nov 2026 | Full-service interior design offering one-on-one designer consultations, custom modular kitchens/wardrobes, and personalized 3D spatial floor plans. | **Verified Fact** |
+| **Urban Ladder** | Catalog & Inspiration Lookbooks | Storewide UI | Nov 2026 | Serene aesthetic with balanced whitespace. Lookbooks are static; items shown in staged rooms must be manually searched in the catalog. No consumer self-service room planner on the website. | **Subjective Usability Observation** |
+| **West Elm** | Custom Upholstery Program | [westelm.com](https://www.westelm.com/) | Nov 2026 | Interactive fabric swatch selector across multiple durability grades (velvet, linen, bouclé, leather); free physical swatches shipped to customers. | **Verified Fact** |
+| **West Elm** | 3D Room Planner Tool | [westelm.com/pages/design-crew/room-planner/](https://www.westelm.com/pages/design-crew/room-planner/) | Nov 2026 | Web-based CAD tool supporting to-scale 2D/3D floor plan layout, placement of Williams-Sonoma brand catalog items, and account project saving. | **Verified Fact** |
+| **West Elm** | Design Crew Services | [westelm.com/pages/design-crew/](https://www.westelm.com/pages/design-crew/) | Nov 2026 | Free virtual and in-person interior styling appointments; stylists generate custom moodboards and floor plans for clients. | **Verified Fact** |
+| **West Elm** | Pricing Clarity & 3D Usability | Customizer & Room Planner UI | Nov 2026 | Editorial typography and photography are aspirational. In the customizer, price changes significantly across fabric grades without displaying an itemized formula breakdown. The 3D planner requires multi-step orbital mouse navigation that is difficult to manipulate on touchscreens. | **Subjective Usability Observation** |
 
 ---
 
-## 3. Individual Competitor Deep Dives
+## 3. Refined Competitor Comparison Matrix
 
-### 3.1. IKEA India
-- **Website URL:** [ikea.com/in/en/](https://www.ikea.com/in/en/)
-- **Room Inspiration Hub:** [ikea.com/in/en/rooms/](https://www.ikea.com/in/en/rooms/)
-- **Planners & Design Tools:** [ikea.com/in/en/planners/](https://www.ikea.com/in/en/planners/)
+### Classification Taxonomy:
+- ❌ **Does Not Exist:** Capability is absent from the platform.
+- ⚠️ **Limited / Constrained:** Capability exists, but has narrow presets, fixed colorways, or restrictive boundaries.
+- 🔄 **Different Workflow:** Capability exists, but through a separate heavy standalone portal, native mobile app, or professional consultation appointment rather than an integrated self-service web flow.
+- 🎯 **Décora Target Approach:** Integrated, lightweight, self-service web flow tailored for consumer ease of use.
 
-#### Detailed Findings & Strengths
-- **Exemplary Information Architecture:** Hierarchical taxonomy categorized by both functional product type (*Chairs $\rightarrow$ Armchairs*) and contextual room (*Living Room $\rightarrow$ Seating*).
-- **"Shop the Look" Interactivity:** Rooms feature interactive hotspot pins overlaid on high-resolution room photography. Clicking a pin reveals an instant mini-card with title, price in INR, and quick-add actions.
-- **Dimensional Transparency:** Unmatched technical transparency providing exact package dimensions, net weights, and downloadable assembly instruction manuals.
-
-#### Usability Friction Points & Documented Limitations
-- **Overwhelming Catalog Density:** For customers seeking curated design rather than utility, browsing through thousands of basic items creates cognitive fatigue.
-- **Utilitarian Visual Aesthetic:** High contrast, bright corporate styling lacks the warmth, tactile textures, and luxury ambience of high-end interior platforms.
-- **Heavy, Fragile 3D Tools:** Tools like *IKEA Kreativ* require WebGL, high network bandwidth, and significant client memory, often lagging or crashing on mid-range laptops and mobile web browsers.
-- **No Unified Moodboard Budgeting:** Shopping lists do not calculate room-level aesthetic grouping or combine customized variants into thematic boards.
-
----
-
-### 3.2. Pepperfry
-- **Website URL:** [pepperfry.com](https://www.pepperfry.com/)
-- **Modular Design & Studios:** [pepperfry.com/studios.html](https://www.pepperfry.com/studios.html)
-
-#### Detailed Findings & Strengths
-- **Deep Alignment with Indian Buyers:** Clear categorization around solid woods valued in India (Sheesham, Teak, Mango Wood), alongside prominent No-Cost EMI and festive promotions.
-- **Granular Sidebar Filtering:** Industry-leading filter granularity allowing users to filter by specific height, width, and depth brackets, material types, brands, and price sliders.
-- **Omnichannel Synergy:** Smooth transition from online browsing to physical "Studio Pepperfry" experience centers where buyers can touch fabric swatches and inspect wood grains.
-
-#### Usability Friction Points & Documented Limitations
-- **Severe Commercial Clutter:** Intrusive marketing banners, countdown timers ("Hurry, Sale Ends in 2 hrs!"), coupon pop-ups, and spin-the-wheel gamification degrade trust and visual elegance.
-- **Fragmented Marketplace Experience:** Because Pepperfry acts as a multi-vendor marketplace, product photography styles vary wildly between vendors, resulting in inconsistent lighting, resolution, and detail standards.
-- **Disconnected Customization:** True customization cannot be executed directly on the web application. Customers seeking custom dimensions or upholstery modifications are redirected to offline store visits or telephone callbacks.
-- **Basic Wishlist:** The "Shortlist" is a flat, unorganized bookmark queue with zero capability to group items by room or track combined renovation budgets.
+| Capability / Evaluation Dimension | IKEA India | Pepperfry | Urban Ladder | West Elm | Décora Target Approach |
+|---|---|---|---|---|---|
+| **Editorial & Architectural Visual Design** | ⚠️ Clean, utilitarian corporate blue/yellow grid. | ❌ High clutter; discount banners & countdowns. | ⚠️ Polished catalog; balanced whitespace. | ✅ Premium editorial; warm neutral tones. | 🎯 **Warm neutrals (linen, cream, walnut, matte black).** |
+| **Catalog Filtering & Faceted Search** | ✅ Room & product taxonomy; real-time search. | ✅ Granular dimensions, wood types, brand, EMI. | ✅ Category filters, wood finish, space-saving tags. | ✅ Filter by material, fabric grade, size, room. | 🎯 **Instant search, material chips, metric INR range slider.** |
+| **Product Detail Transparency** | ✅ Exploded views, package dims, assembly PDFs. | ⚠️ Multi-vendor specs; varying photo quality. | ✅ 360° views, dimension diagrams, care notes. | ✅ Lifestyle shots, fabric swatches, care notes. | 🎯 **Multi-angle gallery, metric specs ($cm$, $kg$), direct customizer.** |
+| **Online Furniture Customization** | 🔄 Modular system configurators (PAX, BESTÅ). | 🔄 Made-to-order via select partner brands / studio. | ⚠️ Fixed presets (2–3 wood shades or fabric hues). | ✅ Rich upholstery swatches across fabric grades. | 🎯 **Interactive swatches, authentic variant assets, additive formula.** |
+| **Pricing Calculation Transparency** | ⚠️ Flat pricing; add-on components itemized. | ⚠️ Sale discounts, coupon codes, EMI variations. | ⚠️ Fixed catalog prices; quotes for modular work. | 🔄 Fabric grades change price without formula breakdown. | 🎯 **Additive formula:** $\text{Base} + \Delta\text{Fabric} + \Delta\text{Finish} + \Delta\text{Size}$. |
+| **Inspiration & "Shop the Look"** | ✅ Rooms hub with clickable product hotspot pins. | ⚠️ Static curated living room galleries. | 🔄 Lookbooks linked to full-service interior consulting. | ✅ "Room Ideas" lookbooks with tagged catalog items. | 🎯 **Curated styles (Japandi, Scandinavian) with 1-click catalog links.** |
+| **Wishlist & Personal Design Saving** | 🔄 Account shopping lists & Kreativ saved designs. | ⚠️ Flat "Shortlist" bookmark queue. | ⚠️ Simple wishlist queue. | 🔄 "Favorites" queue & Design Crew project files. | 🎯 **Thematic Design Boards with live estimated budget in ₹.** |
+| **Room Planning Tool** | 🔄 *IKEA Kreativ* (3D WebGL / LiDAR app); Home Planners. | 🔄 In-store 3D consultant CAD layouts (Studio). | 🔄 Professional 3D consultation (Home Interiors). | 🔄 3D Web Room Planner (Autodesk/Cylindo engine). | 🎯 **Lightweight React-managed SVG 2D Canvas with live ₹ tally.** |
+| **Design Consultation Workflow** | 🔄 In-store / virtual appointment booking. | 🔄 Free consultation booking at Studio Pepperfry. | 🔄 Lead capture for full-home interior design service. | 🔄 "Design Crew" free virtual/in-store appointments. | 🎯 **Dual intake: Instant guest request + Account-linked customer flow.** |
 
 ---
 
-### 3.3. Urban Ladder
-- **Website URL:** [urbanladder.com](https://www.urbanladder.com/)
-- **Collections & Interiors:** [urbanladder.com/interiors](https://www.urbanladder.com/interiors)
+## 4. Standardized Customization Pricing Model
 
-#### Detailed Findings & Strengths
-- **Clean Aesthetic & High-Resolution Presentation:** Significantly more serene and curated than Pepperfry. Warm photography, consistent product card ratios, and minimal aggressive marketing banners.
-- **Space-Saving & Dual-Purpose Focus:** Excellent communication of compact urban living solutions (e.g., hydraulic storage beds, nesting coffee tables, fold-away desks).
-- **Comprehensive Specification Tables:** Clear material disclosures (solid wood vs. engineered veneer), weight capacity ratings, and warranty information.
+To avoid conflicting mathematical definitions, Décora uses a single, consistent **additive pricing model** for the initial implementation:
 
-#### Usability Friction Points & Documented Limitations
-- **Rigid Product Configurations:** Most freestanding furniture pieces are available only in 1 or 2 static wood finishes (e.g., Teak vs. Mahogany). Interactive customization with real-time price updates is non-existent.
-- **Static Inspiration Lookbooks:** Inspiration galleries present appealing room designs but lack interactive hotspot tagging; users must manually search the catalog to find the items featured in the photos.
-- **Gated Interior Planning:** Spatial planning and 3D floor plan layouts are restricted to full-service interior consulting clients; self-service room planning is completely absent for regular buyers.
+$$\mathbf{\text{Final Price}} = \text{Base Price} + \Delta\text{Fabric Adjustment} + \Delta\text{Finish Adjustment} + \Delta\text{Size Adjustment}$$
 
----
+### Reference Implementation Example:
+For a premium lounge chair with a baseline cost of **₹28,000**:
+$$\begin{aligned}
+\text{Base Price} &= \text{₹28,000} \quad \text{(Standard frame in natural beech)} \\
+\Delta\text{Fabric Adjustment} &= +\text{₹3,500} \quad \text{(Upgraded Cream Bouclé upholstery)} \\
+\Delta\text{Finish Adjustment} &= +\text{₹2,000} \quad \text{(Solid Natural White Oak finish)} \\
+\Delta\text{Size Adjustment} &= +\text{₹4,000} \quad \text{(Grand Scale dimensions)} \\
+\hline
+\mathbf{\text{Final Price (₹)}} &= \mathbf{₹37,500}
+\end{aligned}$$
 
-### 3.4. West Elm
-- **Website URL:** [westelm.com](https://www.westelm.com/)
-- **Room Inspiration Ideas:** [westelm.com/pages/ideas-and-advice/](https://www.westelm.com/pages/ideas-and-advice/)
-- **Design Crew & Services:** [westelm.com/pages/design-crew/](https://www.westelm.com/pages/design-crew/)
-
-#### Detailed Findings & Strengths
-- **Gold Standard in Editorial Visual Design:** Sophisticated typography, editorial layout grids, natural lighting, and tactile texture photography (bouclé, slub velvet, white oak, brushed brass).
-- **Exceptional Upholstery Customizer:** Customers can select between 30+ fabric swatches categorized by lifestyle grades (performance, pet-friendly, velvet, linen).
-- **Curated Thematic Lookbooks:** Lookbooks organized around distinct modern aesthetics (*Japandi, Warm Modern, Relaxed Coastal, Mid-Century Modern*) that resonate with contemporary design enthusiasts.
-
-#### Usability Friction Points & Documented Limitations
-- **Opaque Pricing Structure:** Selecting different fabric grades alters the final price dramatically, but the site provides no breakdown or explanation of how the price was derived.
-- **Heavy 3D Room Planner:** The web-based 3D room planner takes upwards of 15–20 seconds to load, requires extensive mouse navigation (orbit, pan, tilt), and is virtually unusable on mobile touchscreens.
-- **High Friction for International Customers:** Heavy USD focus and shipping constraints make the direct platform less applicable to Indian domestic requirements without localized pricing and metric dimensions.
+### Backend Price Integrity Rule:
+- The frontend recalculates and presents this breakdown dynamically as the user toggles options.
+- When saving a configuration or persisting an item to a Design Board, the payload transmits the chosen variant IDs along with the calculated price.
+- **Backend Validation:** The Express server (`/api/v1/customizations`) must re-compute and validate the final price against the product's official pricing rules stored in MongoDB. If a client payload submits a tampered or invalid price, the server rejects the request with HTTP 400 Bad Request, ensuring pricing integrity.
 
 ---
 
-## 4. Feature Gap Analysis
+## 5. Customization Asset Requirements & Strategy
 
-The competitive landscape reveals significant unaddressed user needs that Décora can capitalize on:
+To avoid misleading visual representations, Décora distinguishes clearly between four asset categories:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                               FEATURE GAP MATRIX                                       │
-├───────────────────────────────┬───────────┬──────────────┬──────────────┬──────────────┤
-│ Feature Capability            │ IKEA      │ Pepperfry    │ Urban Ladder │ West Elm     │
-├───────────────────────────────┼───────────┼──────────────┼──────────────┼──────────────┤
-│ Editorial Warm Visual Design  │ ❌ Low    │ ❌ Low       │ ⚠️ Moderate  │ ✅ Excellent │
-│ Transparent Dynamic Pricing   │ ⚠️ Fixed  │ ❌ Opaque    │ ❌ Fixed     │ ❌ Opaque    │
-│ Real-Time Swatch Overlays     │ ❌ Modular│ ❌ None      │ ❌ Limited   │ ✅ Yes       │
-│ Thematic Moodboard Budgets    │ ❌ None   │ ❌ None      │ ❌ None      │ ❌ None      │
-│ Lightweight 2D Room Planner   │ ❌ 3D Only│ ❌ None      │ ❌ None      │ ❌ 3D Only   │
-│ Dual Consultation Intake      │ ⚠️ Account│ ⚠️ Store Form│ ⚠️ Lead Form │ ⚠️ Appt Form │
-│ INR Metric Specifications     │ ✅ Yes    │ ✅ Yes       │ ✅ Yes       │ ❌ No (USD)  │
-└───────────────────────────────┴───────────┴──────────────┴──────────────┴──────────────┘
+│                        CUSTOMIZATION ASSET CLASSIFICATION                              │
+├───────────────────────────────┬────────────────────────────────────────────────────────┤
+│ Asset Category                │ Definition & Purpose                                   │
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ 1. Genuine Material Swatches  │ High-resolution macro photography of physical material  │
+│                               │ textures (e.g., woven bouclé, slub linen, top-grain    │
+│                               │ leather, oak grain). Used in the swatch selection tray.│
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ 2. Base Furniture Images      │ Clean, professionally staged neutral product photos    │
+│                               │ on transparent or minimal backgrounds.                 │
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ 3. Prepared Variant Images    │ Dedicated pre-rendered or photographed assets          │
+│                               │ representing distinct structural or upholstery variants│
+│                               │ (e.g., Sofa in Charcoal vs. Sofa in Cream).            │
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ 4. CSS / SVG Overlays         │ Programmatic tint, blend-mode, or highlight layers     │
+│                               │ applied selectively to hardware or wood stain areas.   │
+└───────────────────────────────┴────────────────────────────────────────────────────────┘
 ```
 
-### Key Gaps Identified:
-1. **The "Customizer Math" Gap:** No competitor transparently shows how material selections impact cost. Customers are left confused why a chair jumped in price when choosing bouclé or walnut.
-2. **The "Room Budgeting" Gap:** Current platforms allow saving items to a generic wishlist, but fail to aggregate costs by room theme. Homeowners cannot see: *"What will this complete Japandi living room setup cost in total?"*
-3. **The "Heavy Planner" Gap:** 3D WebGL planners alienate non-technical users and mobile shoppers. There is no simple, lightweight 2D top-down planner where users can drag, rotate, and check dimensions in seconds.
-4. **The "Commercial Clutter" Gap:** Indian platforms (Pepperfry) sacrifice aesthetic beauty for aggressive sales prompts, while luxury platforms (West Elm) feel distant and inaccessible.
+### Overlays Suitability Guideline:
+- **Where Overlays Are Suitable:** CSS/SVG overlays (`mix-blend-mode: multiply`, SVG color filters) are appropriate for flat or semi-reflective surfaces where the geometry remains identical—such as shifting metal hardware from brushed brass to matte black, or tinting wood stain warmth.
+- **Where Overlays Are Unsuitable:** CSS overlays **cannot** automatically produce photorealistic material textures (such as the deep tactile loops of bouclé or the grain variations of weathered leather). For major upholstery changes, the platform relies on **genuine prepared variant images** paired with tactile swatch close-ups, ensuring visual authenticity without deceptive rendering.
 
 ---
 
-## 5. Décora Strategic Differentiation Blueprint
+## 6. Design Board Configuration Persistence & Budget Semantics
 
-Within our **14-day academic timeline**, Décora will execute five strategic differentiators tailored for maximum frontend impact:
+### Configuration Retention Architecture
+A saved furniture item on a design board does not merely store a raw `productId`; it retains an explicit configuration snapshot:
+- `productId`: Reference to the base catalog piece.
+- `chosenFabric`: Specific fabric variant ID (e.g., `fabric-boucle-cream`).
+- `chosenFinish`: Specific finish variant ID (e.g., `finish-oak-natural`).
+- `chosenSize`: Specific dimension scale (e.g., `size-grand`).
+- `configuredPrice`: Exact calculated price in INR at the time of board addition (e.g., `₹37,500`).
+- `variantImage`: Corresponding configured image asset path.
 
-```mermaid
-flowchart TD
-    subgraph Differentiator1 ["1. Editorial Warm Aesthetics"]
-        A1["Serene warm neutrals (linen, cream, warm slate, walnut)"]
-        A2["Clean editorial typography & distraction-free layout"]
-    end
+### Multi-Configuration Support:
+Because items store discrete configuration snapshots, the **same base product can coexist in different configurations across different design boards** (or even within the same board). For example:
+- On "Living Room Board": *Komorebi Armchair* configured in Cream Bouclé + Oak at **₹37,500**.
+- On "Study Reading Corner Board": *Komorebi Armchair* configured in Charcoal Linen + Walnut at **₹33,500**.
 
-    subgraph Differentiator2 ["2. Interactive Customizer & Math"]
-        B1["Genuine high-res swatches & coordinated SVG overlays"]
-        B2["Live transparent INR formula breakdown"]
-    end
+### Design Budget Semantics:
+- Board totals represent **estimated design budgets** intended for project planning and cost comparison.
+- They are clearly labeled as *"Total Estimated Design Budget"* rather than a retail cart subtotal, because real checkout and payment processing are strictly out of scope for Release 1.0.
 
-    subgraph Differentiator3 ["3. Integrated Discovery & 'Shop Look'"]
-        C1["Curated aesthetics (Japandi, Scandinavian, Minimalist)"]
-        C2["1-click transition from room photo to customizer"]
-    end
+---
 
-    subgraph Differentiator4 ["4. Multi-Board Budgeting"]
-        D1["Group items into named project boards"]
-        D2["Real-time aggregated expenditure counter in ₹"]
-    end
+## 7. Refined 2D Room Planner Scope (Should Have)
 
-    subgraph Differentiator5 ["5. Agile React-Managed SVG Planner"]
-        E1["Top-down 2D floorboard with metric dimensions"]
-        E2["Zero 3D latency, touch-friendly drag, 45°/90° rotation"]
-    end
+To maintain feasibility within the 14-day academic timeline, the initial room planner implementation is strictly timeboxed:
 
-    Differentiator1 --> F["DÉCORA PLATFORM"]
-    Differentiator2 --> F
-    Differentiator3 --> F
-    Differentiator4 --> F
-    Differentiator5 --> F
+### In-Scope (Initial Implementation):
+- User-defined room dimensions in meters (e.g., $4.5m \times 3.8m$).
+- Proportional React-managed SVG grid floorboard that scales responsively.
+- Furniture catalog palette sidebar containing top-down 2D vector architectural blocks (sofas, tables, chairs, beds, desks).
+- Drag-and-drop placement of furniture onto the SVG room canvas.
+- Item repositioning, 45° and 90° rotation controls, and item removal.
+- Real-time aggregated room furniture budget counter in INR (₹).
+- Save room layout coordinates to MongoDB (`/api/v1/room-plans`) and reload saved layouts.
+
+### Explicitly Optional (Could Have):
+- Advanced bounding-box collision detection.
+- Wall snapping and angle snapping guides.
+- Irregular or non-rectangular polygon room geometries.
+
+---
+
+## 8. Refined Visual Direction
+
+### Primary Design Language: Warm Editorial Architectural Aesthetic
+- **Color Palette:** Warm neutrals inspired by natural architectural materials—linen whites (`#FAF9F6`), warm stone (`#F5F2EB`), soft oatmeal (`#E7E2D8`), rich walnut (`#4A3728`), and deep charcoal accents (`#1C1917`).
+- **Typography:** Refined editorial typography combining high-contrast serif headers (editorial elegance) with clean, legible geometric sans-serif body copy.
+- **Composition:** Generous whitespace, structured grid layouts, tactile photography, and a calm, distraction-free atmosphere free of aggressive promotional merchandising.
+
+### Styling Clarification:
+- Translucent frosted navigation, subtle drop shadows, and backdrop blur (`backdrop-blur-md`) are **optional styling enhancements** to elevate visual polish; they do not constitute the core brand identity. The brand identity is grounded in **warm architectural minimalism and tactile material honesty**.
+
+---
+
+## 9. Final Recommended Frontend Scope for 14-Day Delivery
+
 ```
-
----
-
-## 6. Recommended Frontend Features & UI Decisions
-
-Based on competitor evidence, the following UI patterns and architectural specifications are recommended for Phase 2 (UI/UX Design) and Phase 3 (React Foundation):
-
-### 6.1. Navigation & Header
-- **Pattern:** Sticky frosted-glass navbar with warm backdrop blur (`backdrop-blur-md bg-stone-50/80`).
-- **Elements:** Minimal brand wordmark, clear category links (*Inspiration, Catalog, Customizer, Room Planner, Design Boards*), active wishlist indicator with badge count, and profile drawer.
-- **Mobile Drawer:** Full-height slide-over drawer with oversized, touch-friendly typography avoiding nested multi-level accordion fatigue.
-
-### 6.2. Catalog & Discovery Grid
-- **Filtering System:** Sticky left-sidebar on desktop, sliding bottom sheet on mobile.
-- **Facet Controls:**
-  - Room Type buttons (*Living, Bedroom, Dining, Office*).
-  - Material pills with subtle visual texture hints (*Solid Oak, Walnut, Bouclé, Linen, Matte Metal*).
-  - Dynamic dual-thumb INR (₹) price range slider.
-  - Multi-criteria sorting dropdown (*Price: Low to High, Price: High to Low, Popularity*).
-- **Product Card Architecture:** 4:5 portrait aspect ratio, subtle elevation hover transitions, quick-save wishlist heart toggle, starting price in INR, and "Customize" shortcut.
-
-### 6.3. Product Detail Page (PDP)
-- **Visuals:** Two-column layout: Sticky multi-image gallery on the left; structured purchase/spec column on the right.
-- **Information Hierarchy:**
-  1. Title, Style Tag, Category, and Base Price in INR (₹).
-  2. Quick material preview swatches.
-  3. Prominent CTA: Primary "Customize This Piece" + Secondary "Add to Design Board".
-  4. Metric Specifications Table ($W \times D \times H\text{ cm}$, Weight in $kg$).
-  5. Craftsmanship & Care instructions.
-  6. "Complete the Look" related products slider.
-
-### 6.4. Furniture Customizer Engine
-- **Layout:** Split view—interactive product stage on the left; configuration panel on the right.
-- **Variant Selectors:**
-  - Fabric swatches (tactile texture representations).
-  - Wood/Metal finish buttons with realistic color representations.
-  - Dimension toggles (Compact, Standard, Grand).
-- **Formula Breakdown Card:**
-  $$\text{Total (₹)} = \underbrace{\text{Base}}_{\text{e.g., ₹28,000}} + \underbrace{\Delta\text{Fabric}}_{\text{e.g., +₹3,500}} + \underbrace{\Delta\text{Finish}}_{\text{e.g., +₹2,000}} + \underbrace{\Delta\text{Size}}_{\text{e.g., +₹4,000}} = \mathbf{₹37,500}$$
-- **State Controls:** Instant "Reset to Defaults" button and "Save to My Designs" action.
-
-### 6.5. React-Managed SVG 2D Room Planner
-- **Canvas System:** Declarative SVG floorboard bounded by user-defined room dimensions in meters ($L \times W\text{ m}$).
-- **Palette Sidebar:** Architectural top-down 2D furniture vector blocks (Sofas, Armchairs, Dining Tables, Beds, Rugs).
-- **Interactions:**
-  - Native SVG drag-and-drop placement.
-  - Click to select with rotational handles (45° and 90° increments).
-  - Delete item button.
-  - Floating status bar with real-time room furniture count and aggregate room budget in INR (₹).
-
-### 6.6. Personal Design Boards
-- **Card-Based Moodboards:** Users can create boards like "Master Bedroom Japandi" or "Balcony Refresh".
-- **Aggregated Budget Tally:** Prominent header showing total combined cost across all items in the board.
-- **Export / Consultation Action:** One-click option to attach an active board to a Design Consultation request.
-
----
-
-## 7. Sources & Reference URLs
-
-1. **IKEA India:**
-   - Official Store: [ikea.com/in/en/](https://www.ikea.com/in/en/)
-   - Room Ideas & Inspiration: [ikea.com/in/en/rooms/](https://www.ikea.com/in/en/rooms/)
-   - Online Design Planners: [ikea.com/in/en/planners/](https://www.ikea.com/in/en/planners/)
-2. **Pepperfry:**
-   - Official Marketplace: [pepperfry.com](https://www.pepperfry.com/)
-   - Studios & Offline Centers: [pepperfry.com/studios.html](https://www.pepperfry.com/studios.html)
-3. **Urban Ladder:**
-   - Official Store: [urbanladder.com](https://www.urbanladder.com/)
-   - Full Interior Solutions: [urbanladder.com/interiors](https://www.urbanladder.com/interiors)
-4. **West Elm:**
-   - Official Catalog: [westelm.com](https://www.westelm.com/)
-   - Design Crew Consultations: [westelm.com/pages/design-crew/](https://www.westelm.com/pages/design-crew/)
-   - Room Ideas & Lookbooks: [westelm.com/pages/ideas-and-advice/](https://www.westelm.com/pages/ideas-and-advice/)
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                      FINAL FRONTEND IMPLEMENTATION SCOPE                               │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Must Have (Days 5–12)                                                                  │
+│ ├── Homepage & Navigation (FR-01): Brand identity, responsive drawer, hero & showcase   │
+│ ├── Interior Inspiration (FR-02): Curated room galleries with "Shop the Look" deep links│
+│ ├── Furniture Catalog & Details (FR-03, FR-04): Search, faceted filters, metric specs  │
+│ ├── Furniture Customizer (FR-05): Additive pricing formula, authentic swatches & reset │
+│ ├── Customer Wishlist (FR-06): One-click toggle with MongoDB persistence               │
+│ ├── Thematic Design Boards (FR-07): Multi-board creation with live estimated budgets   │
+│ ├── Authentication & Profile (FR-09): HTTP-only cookies, registration, login & logout  │
+│ └── Consultation Intake (FR-10): Dual guest & account-linked questionnaire             │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Should Have (Days 10 & 13)                                                             │
+│ ├── 2D SVG Room Planner (FR-08): Proportional grid, drag/drop, rotate & live ₹ budget  │
+│ ├── Admin Product CRUD (FR-11): Management table with create, edit, delete & toggles   │
+│ └── Consultation Pipeline (FR-11): Status management (New → Contacted → Completed)     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Could Have (Day 14 Stretch Only)                                                       │
+│ ├── Room Planner Collision Warning: Bounding-box overlap border indicator              │
+│ └── Admin Analytics Charts: Style popularity and inquiry volume charts                 │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```

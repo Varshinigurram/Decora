@@ -85,8 +85,8 @@ Because this project is evaluated under **Frontend Web Development**, the platfo
   - Dimension Scale (e.g., Standard, Compact, Extended).
 - **FR-05.2 (Valid Option Combinations):** Enforces compatible option pairs; incompatible variants are disabled with explanatory tooltips.
 - **FR-05.3 (Authentic Variant Assets):** Displays genuine high-resolution material/fabric swatches and synchronized visual overlays. Unrelated furniture photos are never used as variants.
-- **FR-05.4 (Dynamic Price Updates):** Instant mathematical recalculation in INR (₹):
-  $$\text{Final Price (₹)} = \text{Base Price} + \Delta\text{Fabric} + \Delta\text{Finish} + (\text{Size Factor} \times \text{Base Price})$$
+- **FR-05.4 (Dynamic Price Updates):** Instant mathematical recalculation in INR (₹) using the additive model:
+  $$\text{Final Price (₹)} = \text{Base Price} + \Delta\text{Fabric} + \Delta\text{Finish} + \Delta\text{Size}$$
 - **FR-05.5 (Reset Behavior):** "Reset to Defaults" option restores base configuration, initial dimensions, and starting price.
 - **FR-05.6 (Configuration Retention):** Active configuration is preserved across view navigation in state, and persists to `/api/v1/customizations` for authenticated users.
 
