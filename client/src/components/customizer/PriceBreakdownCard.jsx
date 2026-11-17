@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, RotateCcw, Check, Sparkles, Compass, AlertCircle } from 'lucide-react';
+import { Heart, RotateCcw, Check, Sparkles, Compass, AlertCircle, FolderPlus } from 'lucide-react';
 import PriceDisplay from '../common/PriceDisplay';
 import Button from '../common/Button';
+import AddToBoardModal from '../designBoards/AddToBoardModal';
 import { useWishlist } from '../../context/WishlistContext';
 import { formatINR } from '../../utils/formatters';
+import { calculateConfiguredPrice } from '../../utils/pricingEngine';
 
 export default function PriceBreakdownCard({
   product,
@@ -28,6 +30,47 @@ export default function PriceBreakdownCard({
   const selectedSize = pricingResult?.selectedOptions?.size || pricingResult?.selectedSize;
   const isValid = pricingResult?.isValid ?? true;
   const errors = pricingResult?.errors || [];
+
+  // Design Board Snapshot state
+  const [isAddToBoardOpen, setIsAddToBoardOpen] = useState(false);
+  const [boardSnapshot, setBoardSnapshot] = useState(null);
+
+  const handleOpenAddToBoard = () => {
+    if (!product) return;
+
+    // Strict recalculation using pricingEngine to guarantee exact additive unit pricing
+    const currentConfig = {
+      fabricId: selectedFabric?.id || null,
+      finishId: selectedFinish?.id || null,
+      sizeId: selectedSize?.id || null,
+    };
+
+    const calculated = calculateConfiguredPrice(product, currentConfig);
+    const configuredUnitPrice = calculated?.finalPrice ?? totalPrice;
+
+    const snapshot = {
+      boardItemId: `bitem-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      productId: product.id,
+      productSlug: product.slug || product.id,
+      name: product.name,
+      category: product.category,
+      image: product.image,
+      quantity: 1,
+      unitPrice: configuredUnitPrice,
+      isCustomized: Boolean(calculated && !calculated.isStandardBaseline),
+      configuration: currentConfig,
+      selectedOptions: {
+        fabric: selectedFabric || null,
+        finish: selectedFinish || null,
+        size: selectedSize || null,
+      },
+      dimensions: product.dimensions || null,
+      addedAt: new Date().toISOString(),
+    };
+
+    setBoardSnapshot(snapshot);
+    setIsAddToBoardOpen(true);
+  };
 
   const handleSaveConfiguration = () => {
     if (!product) return;
@@ -156,7 +199,18 @@ export default function PriceBreakdownCard({
       {/* CTAs */}
       <div className="space-y-2.5 pt-1">
         <Button
-          variant={savedFeedback ? 'secondary' : 'primary'}
+          variant="primary"
+          size="md"
+          className="w-full flex items-center justify-center gap-2 shadow-subtle"
+          onClick={handleOpenAddToBoard}
+          disabled={!isValid}
+        >
+          <FolderPlus className="w-4 h-4" />
+          <span>Add to Design Board</span>
+        </Button>
+
+        <Button
+          variant="secondary"
           size="md"
           className="w-full flex items-center justify-center gap-2"
           onClick={handleSaveConfiguration}
@@ -168,8 +222,8 @@ export default function PriceBreakdownCard({
             </>
           ) : (
             <>
-              <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current text-white' : ''}`} />
-              <span>{inWishlist ? 'Update in Wishlist' : 'Save Configuration'}</span>
+              <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current text-forest' : ''}`} />
+              <span>{inWishlist ? 'Update in Wishlist' : 'Save to Wishlist'}</span>
             </>
           )}
         </Button>
@@ -184,6 +238,14 @@ export default function PriceBreakdownCard({
           <span>Place in Room Planner</span>
         </Button>
       </div>
+
+      {/* Add To Design Board Modal */}
+      <AddToBoardModal
+        isOpen={isAddToBoardOpen}
+        onClose={() => setIsAddToBoardOpen(false)}
+        itemPayload={boardSnapshot}
+        product={product}
+      />
     </div>
   );
 }

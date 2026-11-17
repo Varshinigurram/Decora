@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Heart,
@@ -10,22 +10,31 @@ import {
   Sparkles,
   ArrowRight,
   PackageOpen,
+  FolderPlus,
 } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import PriceDisplay from '../components/common/PriceDisplay';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
+import Modal from '../components/common/Modal';
 import ProductGallery from '../components/catalog/ProductGallery';
 import ProductSpecifications from '../components/catalog/ProductSpecifications';
 import ProductCard from '../components/catalog/ProductCard';
 import EmptyState from '../components/common/EmptyState';
+import AddToBoardModal from '../components/designBoards/AddToBoardModal';
 import { getProductByIdOrSlug, getRelatedProducts } from '../data/products';
 import { useWishlist } from '../context/WishlistContext';
+import { calculateConfiguredPrice } from '../utils/pricingEngine';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isInWishlist, toggleWishlist } = useWishlist();
+
+  // Design Board Integration State
+  const [isAddToBoardOpen, setIsAddToBoardOpen] = useState(false);
+  const [isCustomizePromptOpen, setIsCustomizePromptOpen] = useState(false);
+  const [boardItemPayload, setBoardItemPayload] = useState(null);
 
   // 1. Resolve Product by ID or Slug
   const product = useMemo(() => getProductByIdOrSlug(id), [id]);
@@ -52,6 +61,62 @@ export default function ProductDetailPage() {
   }
 
   const isWishlisted = isInWishlist(product.id);
+
+  // Standard snapshot creator for non-customizable products or baseline specification
+  const handleOpenAddToBoardStandard = () => {
+    let selectedOptions = { fabric: null, finish: null, size: null };
+    let configuration = { fabricId: null, finishId: null, sizeId: null };
+
+    if (product.customizable && product.customizationOptions) {
+      const { fabrics = [], finishes = [], sizes = [] } = product.customizationOptions;
+      const defaultFabric = fabrics.find((f) => f.delta === 0) || fabrics[0] || null;
+      const defaultFinish = finishes.find((f) => f.delta === 0) || finishes[0] || null;
+      const defaultSize = sizes.find((s) => s.delta === 0) || sizes[0] || null;
+
+      configuration = {
+        fabricId: defaultFabric?.id || null,
+        finishId: defaultFinish?.id || null,
+        sizeId: defaultSize?.id || null,
+      };
+
+      selectedOptions = {
+        fabric: defaultFabric,
+        finish: defaultFinish,
+        size: defaultSize,
+      };
+    }
+
+    // Verify baseline price using pricingEngine
+    const pricing = calculateConfiguredPrice(product, configuration);
+    const unitPrice = pricing?.finalPrice || product.basePrice || product.price || 0;
+
+    const snapshot = {
+      boardItemId: `bitem-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      productId: product.id,
+      productSlug: product.slug || product.id,
+      name: product.name,
+      category: product.category,
+      image: product.image,
+      quantity: 1,
+      unitPrice,
+      isCustomized: false,
+      configuration,
+      selectedOptions,
+      dimensions: product.dimensions || null,
+      addedAt: new Date().toISOString(),
+    };
+
+    setBoardItemPayload(snapshot);
+    setIsAddToBoardOpen(true);
+  };
+
+  const handleAddToBoardClick = () => {
+    if (product.customizable) {
+      setIsCustomizePromptOpen(true);
+    } else {
+      handleOpenAddToBoardStandard();
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -159,6 +224,17 @@ export default function ProductDetailPage() {
                 </Button>
               </Link>
             ) : null}
+
+            {/* Add to Design Board Action */}
+            <Button
+              variant={product.customizable ? 'secondary' : 'primary'}
+              size={product.customizable ? 'md' : 'lg'}
+              className="w-full flex items-center justify-center gap-2"
+              onClick={handleAddToBoardClick}
+            >
+              <FolderPlus className="w-4 h-4 text-forest" />
+              <span>Add to Design Board</span>
+            </Button>
 
             <div className="grid grid-cols-2 gap-3">
               {/* Wishlist Toggle Button */}
@@ -268,6 +344,59 @@ export default function ProductDetailPage() {
           </div>
         </section>
       )}
+
+      {/* Customizable Guidance Recommendation Modal */}
+      <Modal
+        isOpen={isCustomizePromptOpen}
+        onClose={() => setIsCustomizePromptOpen(false)}
+        title="Customization Recommended"
+        subtitle="Bespoke Design Studio"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4 text-left">
+          <p className="text-sm text-charcoal-muted leading-relaxed">
+            <strong className="text-charcoal">{product.name}</strong> is an architectural piece that supports bespoke fabrics, finishes, and tailoring.
+          </p>
+          <p className="text-xs text-charcoal-muted leading-relaxed">
+            We recommend configuring your specifications in the Bespoke Customizer first so your design board captures your exact fabric, wood finish, and tailored dimensions.
+          </p>
+
+          <div className="space-y-2.5 pt-2">
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full justify-center gap-2 shadow-subtle"
+              onClick={() => {
+                setIsCustomizePromptOpen(false);
+                navigate(`/customizer/${product.id}`);
+              }}
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Configure in Customizer</span>
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="md"
+              className="w-full justify-center"
+              onClick={() => {
+                setIsCustomizePromptOpen(false);
+                handleOpenAddToBoardStandard();
+              }}
+            >
+              Add Standard Specification As-Is
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Add To Design Board Modal */}
+      <AddToBoardModal
+        isOpen={isAddToBoardOpen}
+        onClose={() => setIsAddToBoardOpen(false)}
+        itemPayload={boardItemPayload}
+        product={product}
+      />
     </div>
   );
 }
