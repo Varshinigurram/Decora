@@ -3,12 +3,15 @@ import { Link } from 'react-router-dom';
 import { Heart, Sliders, ArrowUpRight } from 'lucide-react';
 import PriceDisplay from '../common/PriceDisplay';
 import Badge from '../common/Badge';
+import { useWishlist } from '../../context/WishlistContext';
 
 export default function ProductCard({
   product,
-  isWishlisted = false,
+  isWishlisted: propIsWishlisted,
   onToggleWishlist,
 }) {
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isWishlisted = propIsWishlisted !== undefined ? propIsWishlisted : isInWishlist(product?.id);
   const [imgSrc, setImgSrc] = useState(product?.image || '/assets/placeholders/placeholder-product.svg');
   const [isHovered, setIsHovered] = useState(false);
 
@@ -21,6 +24,8 @@ export default function ProductCard({
     e.stopPropagation();
     if (onToggleWishlist) {
       onToggleWishlist(product?.id);
+    } else {
+      toggleWishlist(product?.id);
     }
   };
 

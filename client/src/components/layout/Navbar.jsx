@@ -13,10 +13,12 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import Button from '../common/Button';
+import { useWishlist } from '../../context/WishlistContext';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { wishlistCount } = useWishlist();
 
   const primaryNavLinks = [
     { label: 'Home', path: '/', icon: Home, exact: true },
@@ -78,10 +80,14 @@ export default function Navbar() {
                 : 'text-charcoal-muted hover:text-charcoal hover:bg-ivory-subtle'
             }`}
             title="My Saved Items"
-            aria-label="Wishlist (Saved Items)"
+            aria-label={`Wishlist (${wishlistCount} saved items)`}
           >
-            <Heart className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-forest" />
+            <Heart className={`w-5 h-5 ${wishlistCount > 0 ? 'text-forest' : ''}`} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-forest text-ivory text-[10px] font-mono font-medium rounded-full flex items-center justify-center shadow-sm">
+                {wishlistCount}
+              </span>
+            )}
           </Link>
 
           <Link to="/consultation">
@@ -111,10 +117,15 @@ export default function Navbar() {
         <div className="flex lg:hidden items-center space-x-2">
           <Link
             to="/wishlist"
-            className="p-2 text-charcoal-muted hover:text-charcoal hover:bg-ivory-subtle rounded-full"
-            aria-label="Wishlist"
+            className="p-2 text-charcoal-muted hover:text-charcoal hover:bg-ivory-subtle rounded-full relative"
+            aria-label={`Wishlist (${wishlistCount} saved items)`}
           >
-            <Heart className="w-5 h-5" />
+            <Heart className={`w-5 h-5 ${wishlistCount > 0 ? 'text-forest' : ''}`} />
+            {wishlistCount > 0 && (
+              <span className="absolute 0 top-0.5 right-0.5 min-w-[16px] h-[16px] px-0.5 bg-forest text-ivory text-[9px] font-mono font-medium rounded-full flex items-center justify-center">
+                {wishlistCount}
+              </span>
+            )}
           </Link>
           <Link
             to="/consultation"
