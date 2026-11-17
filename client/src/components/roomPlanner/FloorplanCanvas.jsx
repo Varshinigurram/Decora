@@ -278,6 +278,10 @@ export default function FloorplanCanvas({
                 key={item.instanceId}
                 transform={`translate(${item.x}, ${item.y}) rotate(${item.rotation || 0}, ${item.w / 2}, ${item.d / 2})`}
                 onPointerDown={(e) => handlePointerDown(e, item)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectItem(item.instanceId);
+                }}
                 style={{
                   cursor: isDragging ? 'grabbing' : 'grab',
                 }}

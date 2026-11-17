@@ -130,6 +130,11 @@ export default function FurniturePalette({ onAddFurniture, customHandoffItem }) 
                   <h4 className="text-xs font-serif font-medium text-charcoal truncate group-hover:text-forest transition-colors">
                     {product.name}
                   </h4>
+                  <p className="text-[10px] text-charcoal-muted truncate">
+                    {Array.isArray(product.materials)
+                      ? product.materials.join(' · ')
+                      : product.primaryMaterial || product.material || ''}
+                  </p>
                   <div className="flex items-center justify-between pt-0.5">
                     <span className="text-[10px] font-mono text-taupe truncate">
                       {w} &times; {d} cm

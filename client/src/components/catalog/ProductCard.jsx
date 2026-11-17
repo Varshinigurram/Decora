@@ -115,7 +115,9 @@ export default function ProductCard({
             </h3>
           </Link>
           <p className="text-xs text-charcoal-muted line-clamp-1">
-            {product?.materials || product?.dimensions}
+            {Array.isArray(product?.materials)
+              ? product.materials.join(' · ')
+              : product?.primaryMaterial || (typeof product?.materials === 'string' ? product.materials : product?.dimensions?.formatted || '')}
           </p>
         </div>
 

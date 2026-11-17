@@ -60,6 +60,12 @@ export default function CustomizerCatalogCard({ product }) {
             </h3>
           </Link>
 
+          <p className="text-xs text-charcoal-muted line-clamp-1">
+            {Array.isArray(product.materials)
+              ? product.materials.join(' · ')
+              : product.primaryMaterial || product.material || ''}
+          </p>
+
           {/* Dynamically derived customization summary badges */}
           <div className="flex flex-wrap gap-1.5 pt-1">
             {fabricCount > 0 && (
