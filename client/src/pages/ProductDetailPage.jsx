@@ -155,7 +155,7 @@ export default function ProductDetailPage() {
               <Link to={`/customizer/${product.id}`} className="block">
                 <Button variant="primary" size="lg" className="w-full flex items-center justify-center gap-2 shadow-elevated">
                   <Sliders className="w-4 h-4" />
-                  <span>Customize This Piece in 3D / Materials</span>
+                  <span>Customize Materials & Finishes</span>
                 </Button>
               </Link>
             ) : null}
