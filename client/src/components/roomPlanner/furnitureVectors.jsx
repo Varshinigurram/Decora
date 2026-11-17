@@ -5,13 +5,20 @@ import React from 'react';
  * 
  * Standardized CAD/drafting representations scaled to exact physical cm dimensions:
  * w = width (cm), d = depth (cm)
+ * 
+ * Live Material Customization:
+ * - activeConfig.fabricColor: Custom upholstery textile color (Hex)
+ * - activeConfig.finishColor: Custom wood/timber finish color (Hex)
  */
 
-export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
-  const strokeColor = hasCollision ? '#B91C1C' : isSelected ? '#35483D' : '#5C5549';
-  const fillColor = hasCollision ? '#FEF2F2' : isSelected ? '#FAF7F2' : '#F6F3ED';
-  const accentColor = hasCollision ? '#EF4444' : isSelected ? '#35483D' : '#A58B70';
-  const cushionColor = hasCollision ? '#FEE2E2' : isSelected ? '#F0EBE1' : '#ECE7DE';
+export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision, activeConfig = {}) {
+  const customFabric = activeConfig?.fabricColor;
+  const customFinish = activeConfig?.finishColor;
+
+  const strokeColor = hasCollision ? '#B91C1C' : isSelected ? '#35483D' : '#4E483E';
+  const woodFrameColor = hasCollision ? '#FEE2E2' : (customFinish || '#D8C8B5');
+  const upholsteryColor = hasCollision ? '#FEE2E2' : (customFabric || '#ECE7DE');
+  const accentColor = hasCollision ? '#EF4444' : isSelected ? '#35483D' : (customFinish || '#A58B70');
 
   switch (type) {
     case 'sofa': {
@@ -24,62 +31,76 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
 
       return (
         <g>
-          {/* Main Frame */}
+          {/* Solid Timber Plinth Base & Outer Frame */}
           <rect
             x={0}
             y={0}
             width={w}
             height={d}
-            rx={6}
-            fill={fillColor}
+            rx={5}
+            fill={woodFrameColor}
             stroke={strokeColor}
-            strokeWidth={2}
+            strokeWidth={1.8}
           />
-          {/* Backrest */}
+
+          {/* Upholstered Backrest */}
           <rect
             x={armWidth}
             y={2}
             width={seatWidth}
             height={backDepth - 2}
             rx={3}
-            fill={cushionColor}
+            fill={upholsteryColor}
             stroke={strokeColor}
             strokeWidth={1.2}
           />
-          {/* Left Armrest */}
+
+          {/* Left Upholstered / Timber Armrest */}
           <rect
             x={2}
             y={2}
             width={armWidth - 2}
             height={d - 4}
             rx={3}
-            fill={cushionColor}
+            fill={upholsteryColor}
             stroke={strokeColor}
             strokeWidth={1.2}
           />
-          {/* Right Armrest */}
+
+          {/* Right Upholstered / Timber Armrest */}
           <rect
             x={w - armWidth}
             y={2}
             width={armWidth - 2}
             height={d - 4}
             rx={3}
-            fill={cushionColor}
+            fill={upholsteryColor}
             stroke={strokeColor}
             strokeWidth={1.2}
           />
-          {/* Cushions */}
+
+          {/* Front Timber Plinth Reveal */}
+          <rect
+            x={armWidth}
+            y={d - 4}
+            width={seatWidth}
+            height={3}
+            fill={woodFrameColor}
+            opacity={0.9}
+          />
+
+          {/* Deep Seat Cushions */}
           {Array.from({ length: cushionCount }).map((_, i) => (
             <rect
               key={i}
               x={armWidth + i * cushionW + 1.5}
               y={backDepth + 2}
               width={cushionW - 3}
-              height={seatDepth - 4}
+              height={seatDepth - 6}
               rx={4}
-              fill={fillColor}
+              fill={upholsteryColor}
               stroke={strokeColor}
-              strokeWidth={1}
+              strokeWidth={1.2}
             />
           ))}
         </g>
@@ -88,28 +109,38 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
 
     case 'lounge':
     case 'accent-chair': {
-      const backThickness = Math.min(16, d * 0.22);
       return (
         <g>
-          {/* Curved Back Shell */}
-          <path
-            d={`M 4,${d - 4} C 4,10 ${w - 4},10 ${w - 4},${d - 4} L ${w - 8},${d - 4} C ${w - 8},18 8,18 8,${d - 4} Z`}
-            fill={cushionColor}
+          {/* Exposed Timber Legs / Frame Trim */}
+          <rect
+            x={2}
+            y={2}
+            width={w - 4}
+            height={d - 4}
+            rx={w * 0.2}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={1.5}
           />
-          {/* Seat Cushion */}
+          {/* Curved Back Shell */}
+          <path
+            d={`M 5,${d - 6} C 5,8 ${w - 5},8 ${w - 5},${d - 6} L ${w - 9},${d - 6} C ${w - 9},16 9,16 9,${d - 6} Z`}
+            fill={upholsteryColor}
+            stroke={strokeColor}
+            strokeWidth={1.5}
+          />
+          {/* Padded Seat Cushion */}
           <ellipse
             cx={w / 2}
             cy={d * 0.58}
-            rx={w * 0.38}
-            ry={d * 0.34}
-            fill={fillColor}
+            rx={w * 0.36}
+            ry={d * 0.32}
+            fill={upholsteryColor}
             stroke={strokeColor}
-            strokeWidth={2}
+            strokeWidth={1.8}
           />
-          {/* Subtle Tufting Accent */}
-          <circle cx={w / 2} cy={d * 0.58} r={2} fill={accentColor} />
+          {/* Center Button Tufting */}
+          <circle cx={w / 2} cy={d * 0.58} r={2.5} fill={accentColor} />
         </g>
       );
     }
@@ -117,22 +148,30 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
     case 'dining-chair': {
       return (
         <g>
+          {/* Timber Frame & Legs */}
           <rect
             x={2}
             y={d * 0.2}
             width={w - 4}
             height={d * 0.75}
             rx={w * 0.15}
-            fill={fillColor}
+            fill={customFabric ? upholsteryColor : woodFrameColor}
             stroke={strokeColor}
             strokeWidth={1.8}
           />
-          {/* Curved Backrest Bar */}
+          {/* Curved Solid Wood Backrest Bar */}
+          <path
+            d={`M 2,${d * 0.35} C 2,2 ${w - 2},2 ${w - 2},${d * 0.35}`}
+            fill="none"
+            stroke={woodFrameColor}
+            strokeWidth={4.5}
+            strokeLinecap="round"
+          />
           <path
             d={`M 2,${d * 0.35} C 2,2 ${w - 2},2 ${w - 2},${d * 0.35}`}
             fill="none"
             stroke={strokeColor}
-            strokeWidth={2.5}
+            strokeWidth={1.2}
             strokeLinecap="round"
           />
         </g>
@@ -143,18 +182,18 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
     case 'dining-table': {
       return (
         <g>
-          {/* Table Surface */}
+          {/* Solid Wood Table Surface */}
           <rect
             x={1}
             y={1}
             width={w - 2}
             height={d - 2}
             rx={5}
-            fill={fillColor}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={2}
           />
-          {/* Beveled Edge Inset */}
+          {/* Beveled Edge Inset Detail */}
           <rect
             x={6}
             y={6}
@@ -162,18 +201,20 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
             height={d - 12}
             rx={3}
             fill="none"
-            stroke={accentColor}
+            stroke={strokeColor}
             strokeWidth={0.8}
             strokeDasharray="4 2"
+            opacity={0.4}
           />
-          {/* Center Table Runner or Architectural Accent */}
+          {/* Center Architectural Runner */}
           <line
             x1={w * 0.25}
             y1={d / 2}
             x2={w * 0.75}
             y2={d / 2}
-            stroke={accentColor}
+            stroke={strokeColor}
             strokeWidth={1.2}
+            opacity={0.6}
           />
         </g>
       );
@@ -182,14 +223,14 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
     case 'coffee-table': {
       return (
         <g>
-          {/* Sculpted or Rounded Slab */}
+          {/* Sculpted Timber Slab */}
           <rect
             x={2}
             y={2}
             width={w - 4}
             height={d - 4}
             rx={Math.min(w, d) * 0.25}
-            fill={fillColor}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={2}
           />
@@ -199,42 +240,54 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
             rx={w * 0.35}
             ry={d * 0.32}
             fill="none"
-            stroke={accentColor}
+            stroke={strokeColor}
             strokeWidth={1}
             strokeDasharray="3 3"
+            opacity={0.4}
           />
         </g>
       );
     }
 
     case 'bed': {
-      const headboardD = 14;
+      const headboardD = 16;
       const pillowW = Math.min(65, (w - 20) / 2);
       const pillowD = 40;
 
       return (
         <g>
-          {/* Base Frame */}
+          {/* Platform Wood Base */}
           <rect
             x={0}
             y={0}
             width={w}
             height={d}
             rx={4}
-            fill={fillColor}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={2}
           />
-          {/* Headboard */}
+          {/* Upholstered Headboard */}
           <rect
             x={0}
             y={0}
             width={w}
             height={headboardD}
             rx={2}
-            fill={cushionColor}
+            fill={upholsteryColor}
             stroke={strokeColor}
             strokeWidth={1.5}
+          />
+          {/* Mattress Foundation */}
+          <rect
+            x={4}
+            y={headboardD + 2}
+            width={w - 8}
+            height={d - headboardD - 6}
+            rx={3}
+            fill="#FAFAF8"
+            stroke={strokeColor}
+            strokeWidth={1}
           />
           {/* Left Pillow */}
           <rect
@@ -258,22 +311,16 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
             stroke={strokeColor}
             strokeWidth={1.2}
           />
-          {/* Folded Duvet Fold line */}
-          <line
-            x1={4}
-            y1={d * 0.55}
-            x2={w - 4}
-            y2={d * 0.55}
-            stroke={strokeColor}
-            strokeWidth={1.2}
-          />
+          {/* Upholstered Folded Duvet Runner */}
           <rect
             x={4}
             y={d * 0.55}
             width={w - 8}
             height={d * 0.43}
-            fill={cushionColor}
-            opacity={0.6}
+            fill={upholsteryColor}
+            stroke={strokeColor}
+            strokeWidth={1.2}
+            opacity={0.9}
           />
         </g>
       );
@@ -282,36 +329,37 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
     case 'desk': {
       return (
         <g>
-          {/* Desktop */}
+          {/* Solid Hardwood Desktop */}
           <rect
             x={1}
             y={1}
             width={w - 2}
             height={d - 2}
             rx={4}
-            fill={fillColor}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={2}
           />
-          {/* Leather Blotter / Working Area */}
+          {/* Leather Blotter / Working Zone */}
           <rect
             x={w * 0.25}
             y={d * 0.15}
             width={w * 0.5}
             height={d * 0.65}
             rx={3}
-            fill={cushionColor}
-            stroke={accentColor}
+            fill={customFabric || '#5C5248'}
+            stroke={strokeColor}
             strokeWidth={1}
+            opacity={0.85}
           />
-          {/* Cable Grommet */}
-          <circle cx={w * 0.85} cy={d * 0.25} r={4} fill="none" stroke={accentColor} strokeWidth={1.2} />
+          {/* Brass Cable Grommet */}
+          <circle cx={w * 0.85} cy={d * 0.25} r={4} fill="none" stroke={strokeColor} strokeWidth={1.2} />
         </g>
       );
     }
 
-    case 'credenza':
     case 'wardrobe':
+    case 'credenza':
     case 'storage': {
       const isWardrobe = d >= 50;
       return (
@@ -322,29 +370,41 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
             width={w - 2}
             height={d - 2}
             rx={3}
-            fill={fillColor}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={2}
           />
           {isWardrobe ? (
-            /* Slatted Louvre Lines for Wardrobe */
-            Array.from({ length: Math.floor(w / 12) }).map((_, i) => (
-              <line
-                key={i}
-                x1={8 + i * 12}
-                y1={4}
-                x2={8 + i * 12}
-                y2={d - 4}
-                stroke={accentColor}
-                strokeWidth={0.8}
-                opacity={0.7}
-              />
-            ))
-          ) : (
-            /* Cabinet Door Division Lines for Credenza */
+            /* Slatted Timber / Linen Panels */
             <>
-              <line x1={w / 3} y1={2} x2={w / 3} y2={d - 2} stroke={accentColor} strokeWidth={1} />
-              <line x1={(w * 2) / 3} y1={2} x2={(w * 2) / 3} y2={d - 2} stroke={accentColor} strokeWidth={1} />
+              {customFabric && (
+                <rect
+                  x={6}
+                  y={6}
+                  width={w - 12}
+                  height={d - 12}
+                  fill={upholsteryColor}
+                  opacity={0.7}
+                />
+              )}
+              {Array.from({ length: Math.floor(w / 12) }).map((_, i) => (
+                <line
+                  key={i}
+                  x1={8 + i * 12}
+                  y1={4}
+                  x2={8 + i * 12}
+                  y2={d - 4}
+                  stroke={strokeColor}
+                  strokeWidth={0.8}
+                  opacity={0.6}
+                />
+              ))}
+            </>
+          ) : (
+            /* Cabinet Doors */
+            <>
+              <line x1={w / 3} y1={2} x2={w / 3} y2={d - 2} stroke={strokeColor} strokeWidth={1} />
+              <line x1={(w * 2) / 3} y1={2} x2={(w * 2) / 3} y2={d - 2} stroke={strokeColor} strokeWidth={1} />
             </>
           )}
         </g>
@@ -355,14 +415,14 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
     case 'lighting': {
       return (
         <g>
-          {/* Radial Light Halo */}
+          {/* Light Glow Halo */}
           <circle
             cx={w / 2}
             cy={d / 2}
             r={Math.min(w, d) / 2}
             fill="#FEF9C3"
             opacity={0.4}
-            stroke={accentColor}
+            stroke="#EAB308"
             strokeWidth={1}
             strokeDasharray="3 3"
           />
@@ -371,12 +431,12 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
             cx={w / 2}
             cy={d / 2}
             r={Math.min(w, d) * 0.3}
-            fill={fillColor}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={2}
           />
-          {/* Central Bulb */}
-          <circle cx={w / 2} cy={d / 2} r={3} fill={accentColor} />
+          {/* Bulb */}
+          <circle cx={w / 2} cy={d / 2} r={3} fill="#CA8A04" />
         </g>
       );
     }
@@ -390,12 +450,12 @@ export function renderFurnitureGlyph(type, w, d, isSelected, hasCollision) {
             width={w - 2}
             height={d - 2}
             rx={3}
-            fill={fillColor}
+            fill={woodFrameColor}
             stroke={strokeColor}
             strokeWidth={1.8}
           />
-          <line x1={1} y1={1} x2={w - 1} y2={d - 1} stroke={accentColor} strokeWidth={0.6} />
-          <line x1={w - 1} y1={1} x2={1} y2={d - 1} stroke={accentColor} strokeWidth={0.6} />
+          <line x1={1} y1={1} x2={w - 1} y2={d - 1} stroke={strokeColor} strokeWidth={0.6} opacity={0.4} />
+          <line x1={w - 1} y1={1} x2={1} y2={d - 1} stroke={strokeColor} strokeWidth={0.6} opacity={0.4} />
         </g>
       );
     }

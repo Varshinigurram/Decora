@@ -306,8 +306,18 @@ export default function FloorplanCanvas({
                   />
                 )}
 
-                {/* Vector Glyph Scaled Exactly to cm dimensions */}
-                {renderFurnitureGlyph(item.glyphType, item.w, item.d, isSelected, hasCollision)}
+                {/* Vector Glyph Scaled Exactly to cm dimensions with Live Material Swatches */}
+                {renderFurnitureGlyph(
+                  item.glyphType,
+                  item.w,
+                  item.d,
+                  isSelected,
+                  hasCollision,
+                  {
+                    fabricColor: item.activeFabric?.colorHex,
+                    finishColor: item.activeFinish?.colorHex,
+                  }
+                )}
 
                 {/* Subtle Name Label inside/under piece */}
                 {isSelected && (

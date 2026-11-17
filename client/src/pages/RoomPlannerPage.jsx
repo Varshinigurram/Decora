@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import RoomBudgetBar from '../components/roomPlanner/RoomBudgetBar';
@@ -11,6 +11,8 @@ import {
   clampItemWithinRoom,
 } from '../utils/roomPlannerUtils';
 import { getFurnitureGlyphType } from '../components/roomPlanner/furnitureVectors';
+import { PRODUCTS } from '../data/products';
+import { getDefaultConfiguration, calculateConfiguredPrice } from '../utils/pricingEngine';
 
 export default function RoomPlannerPage() {
   const location = useLocation();
@@ -24,22 +26,48 @@ export default function RoomPlannerPage() {
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [showDimensions, setShowDimensions] = useState(true);
 
-  // Placed Furniture State
+  // Placed Furniture State with Per-Instance Customization
   const [placedItems, setPlacedItems] = useState(() => {
-    // Initial sample layout: one sofa and one coffee table to welcome the user
+    // Initial sample layout: one customizable sofa and one coffee table
+    const sylvanProduct = PRODUCTS.find((p) => p.id === 'sofa-sylvan');
+    const sylvanDefaultConfig = sylvanProduct
+      ? getDefaultConfiguration(sylvanProduct)
+      : { fabricId: 'fab-linen-raw', finishId: 'fin-oak', sizeId: 'size-3seater' };
+    const sylvanPricing = sylvanProduct
+      ? calculateConfiguredPrice(sylvanProduct, sylvanDefaultConfig)
+      : { finalPrice: 45000, selectedOptions: {} };
+
     return [
       {
         instanceId: 'inst-init-sofa',
         productId: 'sofa-sylvan',
         name: 'Sylvan 3-Seater Minimalist Sofa',
         category: 'Seating',
-        price: 45000,
+        price: sylvanPricing.finalPrice,
         w: 220,
         d: 90,
         x: 90,
         y: 60,
         rotation: 0,
         glyphType: 'sofa',
+        configuration: sylvanDefaultConfig,
+        activeFabric: sylvanPricing.selectedOptions.fabric || {
+          id: 'fab-linen-raw',
+          name: 'Natural Flax Linen',
+          delta: 0,
+          colorHex: '#EAE5DB',
+        },
+        activeFinish: sylvanPricing.selectedOptions.finish || {
+          id: 'fin-oak',
+          name: 'Natural White Oak',
+          delta: 0,
+          colorHex: '#D8C8B5',
+        },
+        activeSize: sylvanPricing.selectedOptions.size || {
+          id: 'size-3seater',
+          name: '3-Seater (220 cm)',
+          delta: 0,
+        },
       },
       {
         instanceId: 'inst-init-table',
@@ -53,6 +81,10 @@ export default function RoomPlannerPage() {
         y: 190,
         rotation: 0,
         glyphType: 'coffee-table',
+        configuration: { fabricId: null, finishId: null, sizeId: null },
+        activeFabric: null,
+        activeFinish: { id: 'fin-kanso', name: 'Travertine & Oak', colorHex: '#D8C8B5' },
+        activeSize: null,
       },
     ];
   });
@@ -72,14 +104,37 @@ export default function RoomPlannerPage() {
     handleUpdateDimensions(length, width);
   };
 
-  // Add furniture piece from palette
+  // Add furniture piece from palette with independent instance configuration
   const handleAddFurniture = (product) => {
-    const w = product.dimensions?.width || 80;
-    const d = product.dimensions?.depth || 80;
     const glyphType = getFurnitureGlyphType(product);
+    const isCustomizable = Boolean(product.customizable && product.customizationOptions);
+
+    let config = { fabricId: null, finishId: null, sizeId: null };
+    let configuredPrice = product.price || product.basePrice || 0;
+    let activeFabric = null;
+    let activeFinish = null;
+    let activeSize = null;
+    let w = product.dimensions?.width || 80;
+    let d = product.dimensions?.depth || 80;
+
+    if (isCustomizable) {
+      config = getDefaultConfiguration(product);
+      const pricing = calculateConfiguredPrice(product, config);
+      configuredPrice = pricing.finalPrice;
+      activeFabric = pricing.selectedOptions.fabric;
+      activeFinish = pricing.selectedOptions.finish;
+      activeSize = pricing.selectedOptions.size;
+
+      if (activeSize?.scaleFactor && activeSize.scaleFactor !== 1) {
+        w = Math.round(w * activeSize.scaleFactor);
+      }
+    } else if (product.configuration) {
+      // Incoming customizer handoff piece
+      config = product.configuration;
+    }
 
     // Place near center with slight staggering
-    const stagger = (placedItems.length * 15) % 60;
+    const stagger = (placedItems.length * 20) % 80;
     const initialX = Math.max(10, Math.round((roomWidth * 100 - w) / 2) + stagger);
     const initialY = Math.max(10, Math.round((roomLength * 100 - d) / 2) + stagger);
 
@@ -88,19 +143,56 @@ export default function RoomPlannerPage() {
       productId: product.id,
       name: product.name,
       category: product.category,
-      price: product.price || product.basePrice || 0,
+      price: configuredPrice,
       w,
       d,
       x: initialX,
       y: initialY,
       rotation: 0,
       glyphType,
+      configuration: config,
+      activeFabric,
+      activeFinish,
+      activeSize,
     };
 
     const clampedItem = clampItemWithinRoom(newItem, roomWidth, roomLength);
 
     setPlacedItems((prev) => [...prev, clampedItem]);
     setSelectedInstanceId(clampedItem.instanceId);
+  };
+
+  // Update configuration specifically for ONE placed instance
+  const handleUpdateConfiguration = (instanceId, nextConfig) => {
+    setPlacedItems((prev) =>
+      prev.map((item) => {
+        if (item.instanceId !== instanceId) return item;
+        const product = PRODUCTS.find((p) => p.id === item.productId);
+        if (!product) return item;
+
+        const pricing = calculateConfiguredPrice(product, nextConfig);
+        if (!pricing.isValid) return item;
+
+        let newW = product.dimensions?.width || item.w;
+        let newD = product.dimensions?.depth || item.d;
+        if (pricing.selectedOptions.size?.scaleFactor) {
+          newW = Math.round(newW * pricing.selectedOptions.size.scaleFactor);
+        }
+
+        const updated = {
+          ...item,
+          configuration: nextConfig,
+          price: pricing.finalPrice,
+          activeFabric: pricing.selectedOptions.fabric,
+          activeFinish: pricing.selectedOptions.finish,
+          activeSize: pricing.selectedOptions.size,
+          w: newW,
+          d: newD,
+        };
+
+        return clampItemWithinRoom(updated, roomWidth, roomLength);
+      })
+    );
   };
 
   // Update position during drag
@@ -205,13 +297,14 @@ export default function RoomPlannerPage() {
               showDimensions={showDimensions}
             />
 
-            {/* Selected Furniture Inspector Bar / Floating Dock */}
+            {/* Contextual Customization Panel & Selected Furniture Inspector */}
             <SelectedFurnitureInspector
               selectedItem={selectedItem}
               hasCollision={selectedItem ? collidingItemIds.has(selectedItem.instanceId) : false}
               onRotate={handleRotate}
               onRemove={handleRemove}
               onDeselect={() => setSelectedInstanceId(null)}
+              onUpdateConfiguration={handleUpdateConfiguration}
             />
           </div>
         </div>

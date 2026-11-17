@@ -1,7 +1,10 @@
-import React from 'react';
-import { RotateCw, RotateCcw, Trash2, X, AlertTriangle, Layers, Ruler } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { RotateCw, RotateCcw, Trash2, X, AlertTriangle, Layers, Sliders, Check, Sparkles } from 'lucide-react';
 import PriceDisplay from '../common/PriceDisplay';
 import Button from '../common/Button';
+import { PRODUCTS } from '../../data/products';
+import { calculateConfiguredPrice } from '../../utils/pricingEngine';
+import { formatINR } from '../../utils/formatters';
 
 export default function SelectedFurnitureInspector({
   selectedItem,
@@ -9,6 +12,7 @@ export default function SelectedFurnitureInspector({
   onRotate,
   onRemove,
   onDeselect,
+  onUpdateConfiguration,
 }) {
   if (!selectedItem) {
     return (
@@ -16,22 +20,76 @@ export default function SelectedFurnitureInspector({
         <Layers className="w-5 h-5 text-taupe mx-auto" />
         <p className="text-xs font-serif text-charcoal">No Piece Selected</p>
         <p className="text-[11px] text-charcoal-muted leading-relaxed">
-          Click any placed furniture block on the floorplan to rotate, reposition, or inspect dimensions.
+          Click any placed furniture block on the floorplan to inspect, customize materials & finishes, rotate, or reposition.
         </p>
       </div>
     );
   }
 
+  const product = useMemo(() => {
+    return PRODUCTS.find((p) => p.id === selectedItem.productId) || null;
+  }, [selectedItem.productId]);
+
+  const customizationOptions = product?.customizationOptions || null;
+  const isCustomizable = Boolean(product?.customizable && customizationOptions);
+
+  const fabrics = customizationOptions?.fabrics || [];
+  const finishes = customizationOptions?.finishes || [];
+  const sizes = customizationOptions?.sizes || [];
+
+  const currentConfig = selectedItem.configuration || {
+    fabricId: selectedItem.activeFabric?.id || null,
+    finishId: selectedItem.activeFinish?.id || null,
+    sizeId: selectedItem.activeSize?.id || null,
+  };
+
+  const handleSelectFabric = (fabricId) => {
+    if (!product) return;
+    const nextConfig = { ...currentConfig, fabricId };
+    onUpdateConfiguration(selectedItem.instanceId, nextConfig);
+  };
+
+  const handleSelectFinish = (finishId) => {
+    if (!product) return;
+    const nextConfig = { ...currentConfig, finishId };
+    onUpdateConfiguration(selectedItem.instanceId, nextConfig);
+  };
+
+  const handleSelectSize = (sizeId) => {
+    if (!product) return;
+    const nextConfig = { ...currentConfig, sizeId };
+    onUpdateConfiguration(selectedItem.instanceId, nextConfig);
+  };
+
+  const formatDelta = (delta) => {
+    if (delta === 0) return 'Included';
+    if (delta > 0) return `+${formatINR(delta)}`;
+    return `-${formatINR(Math.abs(delta))}`;
+  };
+
   return (
-    <div className={`card-architectural p-5 bg-white space-y-4 transition-all ${
-      hasCollision ? 'ring-2 ring-red-400 border-red-200' : 'border-forest/40'
-    }`}>
+    <div
+      className={`card-architectural p-5 bg-white space-y-5 transition-all ${
+        hasCollision ? 'ring-2 ring-red-400 border-red-200' : 'border-forest/40'
+      }`}
+    >
       {/* Header with Title and Deselect */}
       <div className="flex items-start justify-between border-b border-sand/40 pb-3">
         <div className="space-y-0.5">
-          <span className="text-[10px] uppercase tracking-wider text-forest font-semibold block">
-            Selected Piece
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-forest font-semibold">
+              Selected Piece
+            </span>
+            {isCustomizable ? (
+              <span className="px-1.5 py-0.2 bg-forest/10 text-forest text-[9px] font-medium rounded flex items-center gap-0.5">
+                <Sparkles className="w-2.5 h-2.5" /> Customizable
+              </span>
+            ) : (
+              <span className="px-1.5 py-0.2 bg-sand/30 text-taupe text-[9px] font-medium rounded">
+                Standard Spec
+              </span>
+            )}
+          </div>
           <h3 className="font-serif text-base font-semibold text-charcoal leading-snug">
             {selectedItem.name}
           </h3>
@@ -59,13 +117,13 @@ export default function SelectedFurnitureInspector({
         </div>
       )}
 
-      {/* Item Details */}
+      {/* Dimensions & Instance Price */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="p-2.5 bg-ivory-subtle rounded border border-sand/40">
           <span className="text-[10px] uppercase tracking-wider text-taupe font-semibold block">
-            Estimated Price
+            Configured Price
           </span>
-          <PriceDisplay amount={selectedItem.price} size="sm" className="font-semibold text-charcoal mt-0.5" />
+          <PriceDisplay amount={selectedItem.price} size="sm" className="font-semibold text-forest mt-0.5" />
         </div>
 
         <div className="p-2.5 bg-ivory-subtle rounded border border-sand/40">
@@ -77,6 +135,138 @@ export default function SelectedFurnitureInspector({
           </span>
         </div>
       </div>
+
+      {/* Live Customization Trays (Only for customizable pieces) */}
+      {isCustomizable && (
+        <div className="space-y-4 pt-2 border-t border-sand/30">
+          <div className="flex items-center gap-1.5">
+            <Sliders className="w-3.5 h-3.5 text-forest" />
+            <span className="text-xs font-semibold text-charcoal">
+              Live Material Customization
+            </span>
+          </div>
+
+          {/* 1. Upholstery Textile Swatches */}
+          {fabrics.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-[11px] uppercase tracking-wider text-charcoal font-medium block">
+                Upholstery Textile
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {fabrics.map((fabric) => {
+                  const isSelected = currentConfig.fabricId === fabric.id;
+                  return (
+                    <button
+                      key={fabric.id}
+                      type="button"
+                      onClick={() => handleSelectFabric(fabric.id)}
+                      className={`p-2 rounded border text-left transition-all flex items-center justify-between gap-1.5 ${
+                        isSelected
+                          ? 'border-forest bg-forest/5 ring-1 ring-forest'
+                          : 'border-sand/60 bg-white hover:bg-ivory'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="w-3.5 h-3.5 rounded-full border border-sand shrink-0 shadow-xs"
+                          style={{ backgroundColor: fabric.colorHex }}
+                        />
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-medium text-charcoal truncate block">
+                            {fabric.name}
+                          </span>
+                          <span className="text-[10px] font-mono text-taupe block">
+                            {formatDelta(fabric.delta)}
+                          </span>
+                        </div>
+                      </div>
+                      {isSelected && <Check className="w-3 h-3 text-forest shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 2. Timber Finish Swatches */}
+          {finishes.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-[11px] uppercase tracking-wider text-charcoal font-medium block">
+                Timber Finish
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {finishes.map((finish) => {
+                  const isSelected = currentConfig.finishId === finish.id;
+                  return (
+                    <button
+                      key={finish.id}
+                      type="button"
+                      onClick={() => handleSelectFinish(finish.id)}
+                      className={`p-2 rounded border text-left transition-all flex items-center justify-between gap-1.5 ${
+                        isSelected
+                          ? 'border-forest bg-forest/5 ring-1 ring-forest'
+                          : 'border-sand/60 bg-white hover:bg-ivory'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="w-3.5 h-3.5 rounded-full border border-sand shrink-0 shadow-xs"
+                          style={{ backgroundColor: finish.colorHex }}
+                        />
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-medium text-charcoal truncate block">
+                            {finish.name}
+                          </span>
+                          <span className="text-[10px] font-mono text-taupe block">
+                            {formatDelta(finish.delta)}
+                          </span>
+                        </div>
+                      </div>
+                      {isSelected && <Check className="w-3 h-3 text-forest shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 3. Size / Scale Options */}
+          {sizes.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-[11px] uppercase tracking-wider text-charcoal font-medium block">
+                Scale &amp; Proportion
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {sizes.map((size) => {
+                  const isSelected = currentConfig.sizeId === size.id;
+                  return (
+                    <button
+                      key={size.id}
+                      type="button"
+                      onClick={() => handleSelectSize(size.id)}
+                      className={`p-2 rounded border text-left transition-all flex items-center justify-between gap-1.5 ${
+                        isSelected
+                          ? 'border-forest bg-forest/5 ring-1 ring-forest'
+                          : 'border-sand/60 bg-white hover:bg-ivory'
+                      }`}
+                    >
+                      <div>
+                        <span className="text-[11px] font-medium text-charcoal block">
+                          {size.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-taupe block">
+                          {formatDelta(size.delta)}
+                        </span>
+                      </div>
+                      {isSelected && <Check className="w-3 h-3 text-forest shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Rotation Angle and Controls */}
       <div className="space-y-2 pt-1 border-t border-sand/30">

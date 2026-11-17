@@ -113,7 +113,8 @@ export const PRODUCTS = [
     customizable: true,
     customizationOptions: {
       fabrics: [
-        { id: 'fab-linen-raw', name: 'Unbleached Flax Linen', delta: 0, colorHex: '#EAE5DB', texture: 'linen' },
+        { id: 'fab-linen-raw', name: 'Natural Flax Linen', delta: 0, colorHex: '#EAE5DB', texture: 'linen' },
+        { id: 'fab-velvet-olive', name: 'Olive Velvet', delta: 5500, colorHex: '#4A5340', texture: 'velvet' },
         { id: 'fab-linen-charcoal', name: 'Slate Linen', delta: 3000, colorHex: '#4A4C50', texture: 'linen' },
         { id: 'fab-boucle-warm', name: 'Oatmeal Bouclé', delta: 6500, colorHex: '#F0ECE1', texture: 'woven' },
       ],
