@@ -87,7 +87,7 @@ export const CUSTOMIZER_PREVIEW = {
   finishes: [
     { id: 'fin-oak', name: 'Natural White Oak', delta: 2000, colorHex: '#D8C8B5' },
     { id: 'fin-beech', name: 'Natural Beech (Standard)', delta: 0, colorHex: '#EFE7DA' },
-    { id: 'fin-walnut', name: 'Rich Walnut', delta: 3500, colorHex: '#6B543D' },
+    { id: 'fin-walnut', name: 'Smoked Walnut', delta: 2200, colorHex: '#6B543D' },
     { id: 'fin-ash', name: 'Ebonized Black Ash', delta: 2500, colorHex: '#292824' },
   ],
 };

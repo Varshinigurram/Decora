@@ -9,6 +9,7 @@ import InspirationDetailPage from '../pages/InspirationDetailPage';
 import CatalogPage from '../pages/CatalogPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
 import CustomizerPage from '../pages/CustomizerPage';
+import ProductCustomizerPage from '../pages/ProductCustomizerPage';
 import WishlistPage from '../pages/WishlistPage';
 import DesignBoardsPage from '../pages/DesignBoardsPage';
 import DesignBoardDetailPage from '../pages/DesignBoardDetailPage';
@@ -29,7 +30,7 @@ export default function AppRoutes() {
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/catalog/:id" element={<ProductDetailPage />} />
         <Route path="/customizer" element={<CustomizerPage />} />
-        <Route path="/customizer/:productId" element={<CustomizerPage />} />
+        <Route path="/customizer/:productId" element={<ProductCustomizerPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/boards" element={<DesignBoardsPage />} />
         <Route path="/boards/:id" element={<DesignBoardDetailPage />} />
