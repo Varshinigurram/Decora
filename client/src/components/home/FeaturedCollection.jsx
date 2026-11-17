@@ -81,7 +81,7 @@ export default function FeaturedCollection() {
         <div className="text-center pt-4">
           <Link to="/catalog">
             <Button variant="secondary" size="lg">
-              Explore Complete Catalog (34 Pieces) <ArrowRight className="w-4 h-4 ml-2" />
+              Explore Complete Collection (16 Pieces) <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
         </div>

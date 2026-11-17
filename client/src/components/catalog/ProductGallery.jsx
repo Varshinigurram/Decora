@@ -41,10 +41,12 @@ export default function ProductGallery({
           <Maximize2 className="w-3.5 h-3.5" />
         </div>
 
-        {/* Angle Badge */}
-        <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded text-[10px] uppercase tracking-wider text-taupe font-semibold border border-sand/40">
-          Angle {activeImageIndex + 1} of {galleryImages.length}
-        </div>
+        {/* Angle Badge (Multi-image galleries only) */}
+        {galleryImages.length > 1 && (
+          <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded text-[10px] uppercase tracking-wider text-taupe font-semibold border border-sand/40">
+            Angle {activeImageIndex + 1} of {galleryImages.length}
+          </div>
+        )}
       </div>
 
       {/* Thumbnails Row */}

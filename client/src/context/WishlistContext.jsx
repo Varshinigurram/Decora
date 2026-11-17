@@ -8,16 +8,19 @@ export function WishlistProvider({ children }) {
   const [wishlistIds, setWishlistIds] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          return new Set(parsed);
+          const validIds = parsed.filter(
+            (id) => typeof id === 'string' && id.trim().length > 0
+          );
+          return new Set(validIds);
         }
       }
     } catch (e) {
       console.warn('Unable to load wishlist from localStorage:', e);
     }
-    // Default initial seeded item for immediate aesthetic engagement
+    // Default initial seeded item for immediate aesthetic engagement on first visit
     return new Set(['chair-komorebi']);
   });
 

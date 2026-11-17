@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Heart,
   Sliders,
@@ -24,6 +24,7 @@ import { useWishlist } from '../context/WishlistContext';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   // 1. Resolve Product by ID or Slug
@@ -43,16 +44,9 @@ export default function ProductDetailPage() {
           title="Product Not Found"
           message={`We could not locate any furniture piece matching "${id}". The design may have been archived or the link might be incorrect.`}
           actionLabel="Return to Furniture Catalog"
-          onAction={() => {}}
+          onAction={() => navigate('/catalog')}
           icon={PackageOpen}
         />
-        <div className="text-center pt-4">
-          <Link to="/catalog">
-            <Button variant="primary" size="md">
-              Browse Catalog
-            </Button>
-          </Link>
-        </div>
       </div>
     );
   }
@@ -123,7 +117,7 @@ export default function ProductDetailPage() {
                   </Badge>
                   {product.stockCount && (
                     <span className="block text-[10px] text-forest font-mono mt-1">
-                      {product.stockCount} units ready to ship
+                      Demo stock: {product.stockCount} units
                     </span>
                   )}
                 </div>
@@ -133,7 +127,7 @@ export default function ProductDetailPage() {
                     Made to Order
                   </Badge>
                   <span className="block text-[10px] text-charcoal-muted mt-1">
-                    Crafting lead time: 3–4 weeks
+                    Demo crafting lead time: 3–4 weeks
                   </span>
                 </div>
               )}
@@ -200,11 +194,11 @@ export default function ProductDetailPage() {
           <div className="pt-4 grid grid-cols-2 gap-3 text-xs text-charcoal-muted border-t border-sand/40">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-forest shrink-0" />
-              <span>5-Year Structural Frame Warranty</span>
+              <span>5-Year Frame Benchmark (Demonstration)</span>
             </div>
             <div className="flex items-center gap-2">
               <RotateCcw className="w-4 h-4 text-forest shrink-0" />
-              <span>14-Day In-Home Return Assurance</span>
+              <span>14-Day Return Assurance (Planned)</span>
             </div>
           </div>
 

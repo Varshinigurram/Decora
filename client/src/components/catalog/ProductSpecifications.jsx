@@ -159,6 +159,14 @@ export default function ProductSpecifications({ product }) {
           </div>
         )}
       </div>
+
+      {/* Academic Demonstration Disclosure */}
+      <div className="p-3 bg-ivory-subtle/80 border border-sand/50 rounded text-[11px] text-charcoal-muted leading-relaxed flex items-start gap-2">
+        <Info className="w-3.5 h-3.5 text-forest shrink-0 mt-0.5" />
+        <span>
+          <strong className="text-charcoal font-medium">Illustrative Academic Specifications:</strong> Structural joinery, metric proportions, and material compositions represent planned architectural standards for academic demonstration. Commercial manufacturing claims and warranties are prototype benchmarks.
+        </span>
+      </div>
     </div>
   );
 }

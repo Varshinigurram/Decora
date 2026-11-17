@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
@@ -35,8 +35,12 @@ export default function CatalogPage() {
     const raw = searchParams.get('material');
     return raw ? raw.split(',').filter(Boolean) : [];
   }, [searchParams]);
+
+  const rawMinPrice = searchParams.get('minPrice');
   const rawMaxPrice = searchParams.get('maxPrice');
-  const priceRange = rawMaxPrice ? Number(rawMaxPrice) : priceBounds.max;
+  const minPrice = rawMinPrice ? Math.max(priceBounds.min, Number(rawMinPrice)) : priceBounds.min;
+  const maxPrice = rawMaxPrice ? Math.min(priceBounds.max, Number(rawMaxPrice)) : priceBounds.max;
+
   const inStockOnly = searchParams.get('inStock') === 'true';
   const sortBy = searchParams.get('sort') || 'featured';
   const currentPage = Math.max(1, Number(searchParams.get('page')) || 1);
@@ -72,8 +76,14 @@ export default function CatalogPage() {
     updateParams({ material: nextMaterials.length > 0 ? nextMaterials.join(',') : null });
   };
 
-  const handlePriceChange = (maxPrice) => {
-    updateParams({ maxPrice: maxPrice >= priceBounds.max ? null : maxPrice });
+  const handlePriceRangeChange = (newMin, newMax) => {
+    const safeMin = Math.max(priceBounds.min, Math.min(newMin, newMax));
+    const safeMax = Math.min(priceBounds.max, Math.max(newMin, newMax));
+
+    updateParams({
+      minPrice: safeMin > priceBounds.min ? safeMin : null,
+      maxPrice: safeMax < priceBounds.max ? safeMax : null,
+    });
   };
 
   const handleInStockToggle = (inStock) => updateParams({ inStock });
@@ -134,8 +144,8 @@ export default function CatalogPage() {
         }
       }
 
-      // Price ceiling matching
-      if (product.basePrice > priceRange) {
+      // Price range matching (inclusive of exact boundaries)
+      if (product.basePrice < minPrice || product.basePrice > maxPrice) {
         return false;
       }
 
@@ -152,7 +162,8 @@ export default function CatalogPage() {
     selectedRoom,
     selectedCategory,
     selectedMaterials,
-    priceRange,
+    minPrice,
+    maxPrice,
     inStockOnly,
   ]);
 
@@ -168,7 +179,6 @@ export default function CatalogPage() {
         return list.sort((a, b) => a.name.localeCompare(b.name));
       case 'featured':
       default:
-        // Featured items first, then stable alphabetical
         return list.sort((a, b) => {
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
@@ -185,12 +195,13 @@ export default function CatalogPage() {
   }, [sortedProducts, currentPage]);
 
   // Active filters metrics
+  const isPriceFiltered = minPrice > priceBounds.min || maxPrice < priceBounds.max;
   const hasActiveFilters =
     Boolean(searchQuery) ||
     selectedRoom !== 'all' ||
     selectedCategory !== 'All' ||
     selectedMaterials.length > 0 ||
-    priceRange < priceBounds.max ||
+    isPriceFiltered ||
     inStockOnly;
 
   const activeFilterCount = [
@@ -198,7 +209,7 @@ export default function CatalogPage() {
     selectedRoom !== 'all',
     selectedCategory !== 'All',
     selectedMaterials.length > 0,
-    priceRange < priceBounds.max,
+    isPriceFiltered,
     inStockOnly,
   ].filter(Boolean).length;
 
@@ -255,8 +266,10 @@ export default function CatalogPage() {
             onCategoryChange={handleCategoryChange}
             selectedMaterials={selectedMaterials}
             onMaterialToggle={handleMaterialToggle}
-            priceRange={priceRange}
-            onPriceChange={handlePriceChange}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            onPriceRangeChange={handlePriceRangeChange}
+            minCatalogPrice={priceBounds.min}
             maxCatalogPrice={priceBounds.max}
             inStockOnly={inStockOnly}
             onInStockToggle={handleInStockToggle}
@@ -305,8 +318,10 @@ export default function CatalogPage() {
                     onCategoryChange={handleCategoryChange}
                     selectedMaterials={selectedMaterials}
                     onMaterialToggle={handleMaterialToggle}
-                    priceRange={priceRange}
-                    onPriceChange={handlePriceChange}
+                    minPrice={minPrice}
+                    maxPrice={maxPrice}
+                    onPriceRangeChange={handlePriceRangeChange}
+                    minCatalogPrice={priceBounds.min}
                     maxCatalogPrice={priceBounds.max}
                     inStockOnly={inStockOnly}
                     onInStockToggle={handleInStockToggle}

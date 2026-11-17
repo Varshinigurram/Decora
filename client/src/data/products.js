@@ -8,10 +8,11 @@
  * - Wishlist & Design Boards
  * - 2D Metric Spatial Room Planner
  * 
- * Standards:
+ * Demonstrative Standards:
  * - Prices in INR (₹)
  * - Dimensions in Metric Centimeters (cm: Width × Depth × Height)
  * - Weights in kg
+ * - Specifications reflect planned architectural and design benchmarks for academic demonstration.
  */
 
 export const PRODUCTS = [
@@ -33,17 +34,15 @@ export const PRODUCTS = [
       formatted: '78 × 84 × 72 cm',
     },
     weightKg: 18.5,
-    materials: ['Solid White Oak', 'Wool Bouclé', 'High-Density Foam'],
-    primaryMaterial: 'Solid White Oak',
+    materials: ['Solid Natural Beech Base', 'Natural Belgian Linen', 'High-Resilience Foam'],
+    primaryMaterial: 'Solid Beech & Natural Linen (Oak / Walnut Upgrade Available)',
     description:
-      'Handcrafted low-slung accent armchair featuring sculpted solid white oak joinery, mortise-and-tenon construction, and textured wool bouclé upholstery.',
+      'Handcrafted low-slung accent armchair featuring sculpted timber joinery, mortise-and-tenon construction, and breathable natural linen. Baseline specification features a natural beech frame; customizable with solid White Oak, Smoked Walnut, or tactile Bouclé.',
     editorialNote:
       'Designed around Japanese wabi-sabi principles, balancing tactile lightness with profound structural grounding.',
     image: '/assets/categories/cat-living.svg',
     gallery: [
       '/assets/categories/cat-living.svg',
-      '/assets/branding/hero-architectural.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Best Seller',
@@ -51,12 +50,13 @@ export const PRODUCTS = [
     customizable: true,
     customizationOptions: {
       fabrics: [
+        { id: 'fab-linen', name: 'Natural Belgian Linen (Standard)', delta: 0, colorHex: '#EAE5DB', texture: 'linen' },
         { id: 'fab-boucle', name: 'Cream Bouclé', delta: 3500, colorHex: '#F6F3ED', texture: 'woven' },
         { id: 'fab-velvet', name: 'Olive Velvet', delta: 4200, colorHex: '#425A4C', texture: 'velvet' },
-        { id: 'fab-linen', name: 'Charcoal Linen', delta: 2500, colorHex: '#59564F', texture: 'slub' },
         { id: 'fab-leather', name: 'Cognac Leather', delta: 8000, colorHex: '#8C5A32', texture: 'leather' },
       ],
       finishes: [
+        { id: 'fin-beech', name: 'Natural Beech (Standard)', delta: 0, colorHex: '#EFE7DA' },
         { id: 'fin-oak', name: 'Natural White Oak', delta: 2000, colorHex: '#D8C8B5' },
         { id: 'fin-walnut', name: 'Rich Walnut', delta: 3500, colorHex: '#6B543D' },
         { id: 'fin-ash', name: 'Ebonized Black Ash', delta: 2500, colorHex: '#292824' },
@@ -67,11 +67,11 @@ export const PRODUCTS = [
       ],
     },
     specifications: {
-      frameMaterial: 'FSC-Certified Solid European White Oak',
-      joinery: 'Mortise & Tenon with Concealed Hardware',
-      cushionFill: 'CertiPUR-US Multi-density Polyurethane foam with feather down wrap',
-      origin: 'Handmade in Jaipur Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      frameMaterial: 'Solid Beech Baseline Construction (Solid White Oak Upgradeable)',
+      joinery: 'Mortise & Tenon with Concealed Architectural Fasteners',
+      cushionFill: 'Multi-Density High-Resilience Polyurethane Foam with Feather-Blend Wrap',
+      origin: 'Prototyped in Jaipur Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'Dust with soft dry microfiber cloth. Spot clean upholstery with water-free solvent.',
     },
@@ -98,7 +98,7 @@ export const PRODUCTS = [
     },
     weightKg: 54.0,
     materials: ['Solid White Oak', 'Belgian Linen', 'Pocket Springs'],
-    primaryMaterial: 'Solid White Oak',
+    primaryMaterial: 'Solid White Oak & Belgian Linen',
     description:
       'Architectural 3-seater linear sofa characterized by a recessed solid oak plinth, deep feather-blend seats, and breathable Belgian flax linen upholstery.',
     editorialNote:
@@ -106,8 +106,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-living.svg',
     gallery: [
       '/assets/categories/cat-living.svg',
-      '/assets/branding/hero-architectural.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Customizable',
@@ -129,11 +127,11 @@ export const PRODUCTS = [
       ],
     },
     specifications: {
-      frameMaterial: 'Kiln-Dried European Beech & Solid White Oak Plinth',
-      joinery: 'Corner-Blocked Double-Dowelled Frame',
+      frameMaterial: 'Kiln-Dried Hardwood Core with Solid White Oak Plinth Base',
+      joinery: 'Corner-Blocked Double-Dowelled Frame Construction',
       cushionFill: 'High-Resilience Cold Foam Core encased in channelled duck feather blend',
-      origin: 'Bengaluru Studio Workshop, India',
-      warranty: '10-Year Structural Frame Warranty',
+      origin: 'Prototyped in Bengaluru Studio, India (Illustrative Specification)',
+      warranty: '10-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'Removable slipcovers. Dry clean only. Fluff cushions weekly for optimal loft.',
     },
@@ -168,18 +166,17 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-living.svg',
     gallery: [
       '/assets/categories/cat-living.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Solid Wood',
     featured: true,
     customizable: false,
     specifications: {
-      frameMaterial: 'Solid American Black Walnut (Grade A)',
+      frameMaterial: 'Solid American Black Walnut (Kiln-Dried Grade A)',
       joinery: 'Deep Blind Dowel Leg Joinery',
       cushionFill: 'N/A',
-      origin: 'Mysuru Woodcraft Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Mysuru Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Protect with coasters. Clean with damp cloth and apply organic beeswax annually.',
     },
@@ -214,7 +211,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-dining.svg',
     gallery: [
       '/assets/categories/cat-dining.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Made to Order',
@@ -236,8 +232,8 @@ export const PRODUCTS = [
       frameMaterial: 'Solid European White Oak Plank Construction',
       joinery: 'Concealed Steel Reinforcement & Mortise Tenons',
       cushionFill: 'N/A',
-      origin: 'Jaipur Atelier, India',
-      warranty: '10-Year Structural Frame Warranty',
+      origin: 'Prototyped in Jaipur Studio, India (Illustrative Specification)',
+      warranty: '10-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Wipe clean with soft damp cloth. Never use harsh abrasive chemicals.',
     },
@@ -264,7 +260,7 @@ export const PRODUCTS = [
     },
     weightKg: 62.0,
     materials: ['Solid White Oak', 'Raw European Linen', 'Slat Base'],
-    primaryMaterial: 'Raw European Linen',
+    primaryMaterial: 'Raw European Linen & Oak Plinth',
     description:
       'Low-slung architectural platform bed featuring a padded headboard upholstered in natural raw linen resting upon a recessed solid oak plinth.',
     editorialNote:
@@ -272,7 +268,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-bedroom.svg',
     gallery: [
       '/assets/categories/cat-bedroom.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Popular',
@@ -295,10 +290,10 @@ export const PRODUCTS = [
     },
     specifications: {
       frameMaterial: 'Solid White Oak & Birch Plywood Slats',
-      joinery: 'Interlocking German Steel Bed Rail Brackets',
+      joinery: 'Interlocking Heavy-Gauge Steel Bed Rail Brackets',
       cushionFill: 'High-Density Foam Headboard Core',
-      origin: 'Bengaluru Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Bengaluru Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Vacuum fabric lightly. Clean wood plinth with dry cloth.',
     },
@@ -333,7 +328,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-office.svg',
     gallery: [
       '/assets/categories/cat-office.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Crafted Joinery',
@@ -343,8 +337,8 @@ export const PRODUCTS = [
       frameMaterial: 'Solid European White Oak & Oak Veneer Panels',
       joinery: 'Dovetail Drawers & Precision Ball-Bearing Tambour Tracks',
       cushionFill: 'N/A',
-      origin: 'Jaipur Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Jaipur Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'Clean with damp cloth. Keep tambour tracks free of dust.',
     },
@@ -371,7 +365,7 @@ export const PRODUCTS = [
     },
     weightKg: 6.8,
     materials: ['Solid White Oak', 'Hand-Woven Paper Cord'],
-    primaryMaterial: 'Solid White Oak',
+    primaryMaterial: 'Solid White Oak & Woven Cord',
     description:
       'Sculptural curved steam-bent oak backrest paired with a hand-woven natural paper cord seat. Lightweight, ergonomic, and timelessly Scandinavian.',
     editorialNote:
@@ -379,7 +373,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-dining.svg',
     gallery: [
       '/assets/categories/cat-dining.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Hand-Woven',
@@ -399,8 +392,8 @@ export const PRODUCTS = [
       frameMaterial: 'Steam-Bent Solid European White Oak',
       joinery: 'Traditional Mortise & Tenon Joinery',
       cushionFill: 'N/A (Paper Cord Suspension)',
-      origin: 'Bengaluru Workshop, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Bengaluru Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'Vacuum paper cord with soft brush. Clean wood with soft dry cloth.',
     },
@@ -435,7 +428,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-office.svg',
     gallery: [
       '/assets/categories/cat-office.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Studio Edition',
@@ -454,10 +446,10 @@ export const PRODUCTS = [
     },
     specifications: {
       frameMaterial: 'Solid American Black Walnut & Brushed Solid Brass Hardware',
-      joinery: 'Dovetailed Solid Wood Drawers with Blum Soft-Close Runners',
+      joinery: 'Dovetailed Solid Wood Drawers with Precision Soft-Close Runners',
       cushionFill: 'N/A',
-      origin: 'Mysuru Woodcraft Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Mysuru Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Protect with desk pad. Wipe clean with dry soft microfiber cloth.',
     },
@@ -492,18 +484,17 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-bedroom.svg',
     gallery: [
       '/assets/categories/cat-bedroom.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Crafted Joinery',
     featured: false,
     customizable: false,
     specifications: {
-      frameMaterial: 'Solid European White Oak',
+      frameMaterial: 'Solid European White Oak (Kiln-Dried Hardwood)',
       joinery: 'Mitred Corner Joints with Internal Splines',
       cushionFill: 'N/A',
-      origin: 'Jaipur Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Jaipur Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Ensure mounting to solid wall studs or heavy masonry anchors.',
     },
@@ -530,7 +521,7 @@ export const PRODUCTS = [
     },
     weightKg: 86.0,
     materials: ['Solid White Oak', 'Natural Linen Door Panels', 'Bronze Rods'],
-    primaryMaterial: 'Solid White Oak',
+    primaryMaterial: 'Solid White Oak & Linen Panels',
     description:
       'Floor-to-ceiling proportions framed in solid oak with breathable semi-sheer Belgian linen door inserts. Includes modular hanging rails and solid oak shelving.',
     editorialNote:
@@ -538,7 +529,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-bedroom.svg',
     gallery: [
       '/assets/categories/cat-bedroom.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Made to Order',
@@ -559,11 +549,11 @@ export const PRODUCTS = [
       ],
     },
     specifications: {
-      frameMaterial: 'Solid White Oak & FSC Certified Oak Veneer',
-      joinery: 'Heavy-duty German Concealed Hinges with Soft-Close',
+      frameMaterial: 'Solid White Oak & Architectural Veneer Core',
+      joinery: 'Concealed Engineered Hinges with Soft-Close Mechanics',
       cushionFill: 'N/A',
-      origin: 'Bengaluru Studio Workshop, India',
-      warranty: '10-Year Structural Frame Warranty',
+      origin: 'Prototyped in Bengaluru Studio, India (Illustrative Specification)',
+      warranty: '10-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Anti-tip wall anchoring hardware included and mandatory. Vacuum linen panels.',
     },
@@ -590,7 +580,7 @@ export const PRODUCTS = [
     },
     weightKg: 14.0,
     materials: ['Solid White Oak', 'Hand-Woven Natural Rattan Cane'],
-    primaryMaterial: 'Solid White Oak',
+    primaryMaterial: 'Solid White Oak & Natural Rattan',
     description:
       'Versatile low bench featuring an airy woven hexagonal rattan cane seat set into a sculpted solid oak frame with curved cylindrical legs.',
     editorialNote:
@@ -598,7 +588,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-dining.svg',
     gallery: [
       '/assets/categories/cat-dining.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Crafted Joinery',
@@ -608,8 +597,8 @@ export const PRODUCTS = [
       frameMaterial: 'Solid European White Oak & Natural Hexagonal Cane Weave',
       joinery: 'Double Through-Tenons with Exposed Oak Wedges',
       cushionFill: 'N/A',
-      origin: 'Jaipur Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Jaipur Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'Dust cane weave gently. Keep away from direct excessive radiator heat.',
     },
@@ -636,7 +625,7 @@ export const PRODUCTS = [
     },
     weightKg: 34.0,
     materials: ['Solid White Oak', 'Matte Sand-Coated Steel'],
-    primaryMaterial: 'Solid White Oak',
+    primaryMaterial: 'Solid White Oak & Powder-Coated Steel',
     description:
       'Open architectural shelving unit pairing rhythmic vertical oak dividers with sand-coated steel structural uprights. Ideal for books, ceramics, and architectural artifacts.',
     editorialNote:
@@ -644,7 +633,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-office.svg',
     gallery: [
       '/assets/categories/cat-office.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Architectural',
@@ -654,8 +642,8 @@ export const PRODUCTS = [
       frameMaterial: 'Solid European White Oak & Powder-Coated Carbon Steel',
       joinery: 'Precision Threaded Steel Rods with Concealed Hex Tensioners',
       cushionFill: 'N/A',
-      origin: 'Bengaluru Workshop, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Bengaluru Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Must be anchored to wall using included safety kit. Dust wood with microfiber.',
     },
@@ -682,7 +670,7 @@ export const PRODUCTS = [
     },
     weightKg: 7.2,
     materials: ['Solid Natural Travertine', 'Belgian Linen Shade', 'Solid Brass'],
-    primaryMaterial: 'Solid Natural Travertine',
+    primaryMaterial: 'Solid Natural Travertine Stone',
     description:
       'Cylindrical base carved from solid unpolished Italian travertine stone, paired with a tapered linen drum shade and solid brass turn switch.',
     editorialNote:
@@ -690,7 +678,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-living.svg',
     gallery: [
       '/assets/categories/cat-living.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Natural Stone',
@@ -698,10 +685,10 @@ export const PRODUCTS = [
     customizable: false,
     specifications: {
       frameMaterial: 'Solid Natural Travertine Stone & Linen Shade',
-      joinery: 'Brass Turned Fittings & Woven Twisted Silk Cord',
+      joinery: 'Solid Brass Turned Fittings & Woven Twisted Silk Cord',
       cushionFill: 'N/A',
-      origin: 'Jaipur Stoneworks, India',
-      warranty: '2-Year Electrical Component Warranty',
+      origin: 'Prototyped in Rajasthan Stoneworks, India (Illustrative Specification)',
+      warranty: '2-Year Electrical Component Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'E27 warm LED bulb (included). Wipe stone with dry cloth.',
     },
@@ -728,7 +715,7 @@ export const PRODUCTS = [
     },
     weightKg: 3.5,
     materials: ['Spun Aluminum', 'Solid White Oak Finial', 'Fabric Cable'],
-    primaryMaterial: 'Spun Aluminum',
+    primaryMaterial: 'Spun Aluminum & Oak Finial',
     description:
       'Generous hemispherical pendant lamp in matte sand-lacquered aluminum crowned with a turned solid oak finial. Casts warm, glare-free downward illumination.',
     editorialNote:
@@ -736,7 +723,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-dining.svg',
     gallery: [
       '/assets/categories/cat-dining.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Popular',
@@ -746,8 +732,8 @@ export const PRODUCTS = [
       frameMaterial: 'Heavy-Gauge Spun Aluminum & Turned White Oak',
       joinery: 'Solid Brass Strain Relief & 2-Metre Braided Fabric Cable',
       cushionFill: 'N/A',
-      origin: 'Bengaluru Studio Workshop, India',
-      warranty: '2-Year Electrical Warranty',
+      origin: 'Prototyped in Bengaluru Studio, India (Illustrative Specification)',
+      warranty: '2-Year Electrical Component Warranty (Planned Benchmark Specification)',
       assemblyRequired: true,
       careInstructions: 'Professional installation recommended. Compatible with dimmable E27 LED bulbs.',
     },
@@ -774,7 +760,7 @@ export const PRODUCTS = [
     },
     weightKg: 19.0,
     materials: ['Solid Smoked Walnut', 'Matte Cotton Velvet', 'Brass Ferrules'],
-    primaryMaterial: 'Solid Smoked Walnut',
+    primaryMaterial: 'Solid Smoked Walnut & Cotton Velvet',
     description:
       'Enveloping barrel armchair featuring continuous curved back cushioning upholstered in moss green velvet, resting upon tapered walnut legs with brass feet.',
     editorialNote:
@@ -782,7 +768,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-living.svg',
     gallery: [
       '/assets/categories/cat-living.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Crafted Joinery',
@@ -806,8 +791,8 @@ export const PRODUCTS = [
       frameMaterial: 'Solid Smoked Walnut & Cold-Cured Foam Core',
       joinery: 'Doweled Hardwood Frame & Solid Brass Leg Ferrules',
       cushionFill: 'High-Resilience Foam wrapped in Dacron batting',
-      origin: 'Mysuru Woodcraft Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Mysuru Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'Brush velvet gently in direction of nap with soft horsehair brush.',
     },
@@ -834,7 +819,7 @@ export const PRODUCTS = [
     },
     weightKg: 16.5,
     materials: ['Solid White Oak', 'Shatter-Proof High-Clarity Glass'],
-    primaryMaterial: 'Solid White Oak',
+    primaryMaterial: 'Solid White Oak Frame',
     description:
       'Full-length gently arched standing mirror framed in seamless steam-bent solid white oak. Designed to lean gracefully against walls or mount securely.',
     editorialNote:
@@ -842,7 +827,6 @@ export const PRODUCTS = [
     image: '/assets/categories/cat-bedroom.svg',
     gallery: [
       '/assets/categories/cat-bedroom.svg',
-      '/assets/placeholders/placeholder-product.svg',
     ],
     fallback: '/assets/placeholders/placeholder-product.svg',
     tag: 'Solid Wood',
@@ -852,8 +836,8 @@ export const PRODUCTS = [
       frameMaterial: 'Solid European White Oak Frame & Birch Plywood Backing',
       joinery: 'Steam-Bent Oak Arch with Concealed Splined Miter Joints',
       cushionFill: 'N/A',
-      origin: 'Jaipur Atelier, India',
-      warranty: '5-Year Structural Frame Warranty',
+      origin: 'Prototyped in Jaipur Studio, India (Illustrative Specification)',
+      warranty: '5-Year Structural Frame Warranty (Planned Benchmark Specification)',
       assemblyRequired: false,
       careInstructions: 'Clean mirror glass with ammonia-free glass cleaner sprayed on cloth. Never spray glass directly.',
     },
