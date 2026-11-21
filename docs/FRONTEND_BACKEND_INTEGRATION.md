@@ -167,25 +167,21 @@ flowchart TD
 
 ---
 
-## 4. Database Seeding Strategy (`server/src/scripts/seed.js`)
+## 4. Database Seeding Strategy (`server/scripts/seedProducts.js` & `seedAdmin.js`)
 
-To ensure parity between frontend mock data and the backend database, a comprehensive seeding script will be implemented in Day 13:
+To ensure parity between frontend datasets and the backend database, dedicated seeding utilities have been established:
 
-### Seeding Workflow:
-1. Connects to MongoDB Atlas / Local cluster via Mongoose.
-2. Clears existing collections (`User.deleteMany()`, `Product.deleteMany()`, `Wishlist.deleteMany()`, `DesignBoard.deleteMany()`, `Consultation.deleteMany()`).
-3. **Products Seeding:** Reads all 34 furniture designs from `client/src/data/products.js`, maps fields to Mongoose `Product` schema, and inserts them with `insertMany()`.
-4. **Admin Seeding:** Creates the initial administrative account:
-   - Email: `admin@decora.interior`
-   - Password: `DecoraAdmin2026!` (hashed with bcrypt)
-   - Role: `admin`
-   - Full Name: `Décora Lead Architect`
-5. **Customer Demo Seeding:** Creates customer accounts:
-   - Email: `customer@decora.interior`
-   - Password: `DecoraCustomer2026!`
-   - Role: `customer`
-   - Full Name: `Aarav Patel`
-6. **Sample Board Seeding:** Seeds initial demonstration boards with pre-populated snapshots matching Day 11 test configurations (e.g. `Minimalist Loft Suite`).
+### Implemented Seeding Workflows:
+1. **Product Catalog Seeding (`server/scripts/seedProducts.js`):**
+   - Reads the authoritative 16 furniture designs from `client/src/data/products.js`.
+   - Normal mode: Idempotent operation that checks for existing `productId` and skips already-seeded products.
+   - Force mode (`--force`): Upserts and updates existing catalog entries without destructive wiping.
+   - Preserves exact product IDs (`chair-komorebi`, `sofa-sylvan`, `table-kanso`, etc.), slugs, dimensional specs, and pricing rules.
+2. **Admin Provisioning (`server/scripts/seedAdmin.js`):**
+   - Provisions administrative accounts with bcrypt-hashed credentials and strict input validation.
+   - Preserves existing accounts without accidental overwriting.
+3. **Future Seeding (Customer Demo & Boards):**
+   - Sample boards with pre-populated snapshots matching Day 11 test configurations (e.g. `Minimalist Loft Suite`) will be seeded in subsequent stages.
 
 ---
 
@@ -193,21 +189,30 @@ To ensure parity between frontend mock data and the backend database, a comprehe
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│ DAY 12: Backend Foundation & API Contract Implementation                         │
-│ ├─ Initialize server/ package.json, Express app, MongoDB connection             │
-│ ├─ Define Mongoose schemas (User, Product, Wishlist, DesignBoard, Consultation) │
-│ ├─ Implement Auth Routes & HTTP-Only Cookie Strategy                            │
-│ ├─ Implement Products API & Server-Side Pricing Engine                          │
-│ └─ Verify API contracts using Automated Unit/Integration Tests                   │
+│ DAY 12: Backend Foundation, Auth & Product API Integration                      │
+│ ├─ Stage 2B: Express app, MongoDB connection, centralized error handling [DONE] │
+│ ├─ Stage 3: Complete Authentication, JWT cookies, role middleware [DONE]        │
+│ ├─ Stage 4 Step 1: Product backend architecture & implementation plan [DONE]    │
+│ ├─ Stage 4 Step 2: Product Model, REST APIs, Pricing Service & Seeding [DONE]   │
+│ └─ Stage 4 Step 3: Frontend Catalog Integration & Service Adapter Migration     │
 └─────────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│ DAY 13: Service Adapter Migration & Admin Governance                             │
-│ ├─ Migrate client/src/services/designBoardService.js to api.js calls            │
-│ ├─ Connect AuthContext and WishlistContext to live endpoints                    │
-│ ├─ Build Admin Dashboard (/admin): Product CRUD & Consultation Pipeline         │
-│ └─ Execute Database Seeding Script (products.js -> MongoDB Atlas)               │
+│ DAY 13: Wishlist, Design Boards & Room Planner Backend Integration              │
+│ ├─ Implement Wishlist & Design Board MongoDB models and REST endpoints         │
+│ ├─ Migrate client/src/services/designBoardService.js to API adapter             │
+│ ├─ Connect AuthContext and WishlistContext to live backend endpoints            │
+│ └─ Build Admin Dashboard (/admin): Product CRUD & Consultation Pipeline         │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ DAY 14: End-to-End Regression, Security Audit & Academic Submission              │
+│ ├─ Full-stack integration testing (Desktop & 390px Mobile Viewports)             │
+│ ├─ Security verification (CORS credentials, XSS, CSRF, rate limits)             │
+│ ├─ Performance & Lighthouse optimization                                         │
+│ └─ Final Academic Packaging & Documentation Review                               │
 └─────────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼

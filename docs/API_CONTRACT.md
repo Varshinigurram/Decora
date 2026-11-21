@@ -71,14 +71,15 @@
 - **Validation:**
   - `fullName`: Required string, 2–100 characters.
   - `email`: Required valid email format, normalized to lowercase.
-  - `password`: Required string, minimum 6 characters.
+  - `password`: Required string, 8–72 bytes, with at least one letter and one number (never trimmed).
 - **Response (`201 Created`):**
-  - Sets `httpOnly` cookie: `accessToken` (15m expiry) and `refreshToken` (7d expiry).
+  - Sets `httpOnly` cookies: `accessToken` (15m expiry, `path: '/'`) and `refreshToken` (7d expiry, `path: '/api/v1/auth'`).
+  - Always forces role to `'customer'`.
   ```json
   {
     "success": true,
     "statusCode": 201,
-    "message": "Account created successfully",
+    "message": "Account created successfully.",
     "data": {
       "user": {
         "id": "673b0a1f4f8d2b001c9a1001",
@@ -92,7 +93,7 @@
 
 ### 2.2. User Login
 - **Method / Endpoint:** `POST /api/v1/auth/login`
-- **Auth / Role:** Public
+- **Auth / Role:** Public (Guarded by `authLimiter`)
 - **Request Body:**
   ```json
   {
@@ -101,12 +102,36 @@
   }
   ```
 - **Response (`200 OK`):**
-  - Sets `httpOnly` cookie with JWT tokens.
+  - Sets `httpOnly` cookies: `accessToken` and `refreshToken`.
   ```json
   {
     "success": true,
     "statusCode": 200,
-    "message": "Signed in successfully",
+    "message": "Signed in successfully.",
+    "data": {
+      "user": {
+        "id": "673b0a1f4f8d2b001c9a1001",
+        "email": "varsha@example.com",
+        "fullName": "Varsha Sharma",
+        "role": "customer"
+      }
+    }
+  }
+  ```
+- **Error Response (`401 Unauthorized`):** Generic `"Invalid email address or password."` for both unknown emails and bad passwords.
+
+### 2.3. Silent Session Refresh
+- **Method / Endpoint:** `POST /api/v1/auth/refresh`
+- **Auth / Role:** Public / Refresh Cookie Holder
+- **Headers:** `Origin: http://localhost:5173`, `Cookie: refreshToken=<token>`
+- **Response (`200 OK`):**
+  - Rotates both tokens atomically and updates `refreshTokenHash` in MongoDB.
+  - Sets new `accessToken` and `refreshToken` cookies.
+  ```json
+  {
+    "success": true,
+    "statusCode": 200,
+    "message": "Session refreshed successfully.",
     "data": {
       "user": {
         "id": "673b0a1f4f8d2b001c9a1001",
@@ -118,22 +143,27 @@
   }
   ```
 
-### 2.3. User Logout
+### 2.4. User Logout
 - **Method / Endpoint:** `POST /api/v1/auth/logout`
 - **Auth / Role:** Public / Authenticated
+- **Operation:**
+  - Idempotently clears `refreshTokenHash` on the user record when identified.
+  - Clears `accessToken` (`path: '/'`) and `refreshToken` (`path: '/api/v1/auth'`) cookies.
 - **Response (`200 OK`):**
-  - Clears `accessToken` and `refreshToken` cookies with `maxAge: 0`.
   ```json
   {
     "success": true,
     "statusCode": 200,
-    "message": "Logged out successfully"
+    "message": "Signed out successfully."
   }
   ```
 
-### 2.4. Current User Session Verification
+### 2.5. Current User Session Verification
 - **Method / Endpoint:** `GET /api/v1/auth/me`
 - **Auth / Role:** Authenticated (`authenticateJWT`)
+- **Operation:**
+  - Verifies token signature and checks live database record (`isActive`, `tokenVersion`).
+  - Returns current database-backed user properties.
 - **Response (`200 OK`):**
   ```json
   {
@@ -158,51 +188,92 @@
 - **Method / Endpoint:** `GET /api/v1/products`
 - **Auth / Role:** Public
 - **Query Parameters:**
-  - `category` (optional): `Seating`, `Tables`, `Storage`, `Lighting`, `Beds`, `Decor`
-  - `roomType` (optional): `living`, `bedroom`, `dining`, `office`, `architectural`
-  - `style` (optional): `Japandi`, `Warm Editorial`, etc.
-  - `search` (optional): String search against title/description
-  - `customizable` (optional): `true` / `false`
-  - `minPrice` / `maxPrice` (optional): Numeric INR bounds
-  - `sort` (optional): `price-asc`, `price-desc`, `featured`, `name-asc`
-  - `page` / `limit` (optional): Defaults `page=1`, `limit=24`
+  - `category` (optional): `Seating`, `Tables`, `Storage`, `Lighting`, `Beds`, `Decor`, `all`
+  - `roomType` (optional): `living`, `bedroom`, `dining`, `office`, `architectural`, `all` (also accepts alias `room`)
+  - `style` (optional): `Japandi`, `Minimalist`, `Scandinavian`, `Mid-Century`, `Warm Editorial`, etc.
+  - `search` / `q` (optional): Case-insensitive string search against name, description, and primaryMaterial (special characters escaped)
+  - `customizable` (optional): Boolean `true` or `false`
+  - `featured` (optional): Boolean `true` or `false`
+  - `inStock` (optional): Boolean `true` or `false`
+  - `material` (optional): Comma-separated materials list
+  - `minPrice` / `maxPrice` (optional): Numeric INR bounds (`minPrice <= maxPrice` strictly enforced)
+  - `sort` (optional): `featured` (default), `price-asc`, `price-desc`, `name-asc`, `name-desc`, `newest`
+  - `page` / `limit` (optional): Defaults `page=1`, `limit=12` (max limit: 48)
 - **Response (`200 OK`):**
   ```json
   {
     "success": true,
     "statusCode": 200,
-    "data": {
-      "products": [
-        {
-          "productId": "chair-komorebi",
-          "slug": "komorebi-lounge-chair",
-          "name": "Komorebi Lounge Chair",
-          "category": "Seating",
-          "roomType": "living",
-          "style": "Japandi",
-          "basePrice": 28000,
-          "inStock": true,
-          "image": "/assets/categories/cat-living.svg",
-          "customizable": true
-        }
-      ],
-      "pagination": {
-        "total": 34,
-        "page": 1,
-        "pages": 2,
-        "limit": 24
+    "message": "Products retrieved successfully.",
+    "data": [
+      {
+        "id": "chair-komorebi",
+        "productId": "chair-komorebi",
+        "slug": "komorebi-lounge-chair",
+        "name": "Komorebi Lounge Chair",
+        "title": "Komorebi Lounge Chair",
+        "category": "Seating",
+        "roomType": "living",
+        "style": "Japandi",
+        "basePrice": 28000,
+        "inStock": true,
+        "stockCount": 10,
+        "customizable": true,
+        "featured": true,
+        "image": "/assets/products/chair-komorebi.png",
+        "dimensions": { "width": 78, "depth": 84, "height": 72, "formatted": "78 × 84 × 72 cm" }
       }
+    ],
+    "pagination": {
+      "total": 16,
+      "page": 1,
+      "pages": 2,
+      "limit": 12
+    },
+    "filters": {
+      "categories": ["Beds", "Decor", "Lighting", "Seating", "Storage", "Tables"],
+      "roomTypes": ["architectural", "bedroom", "dining", "living", "office"],
+      "styles": ["Japandi", "Mid-Century", "Minimalist", "Scandinavian"],
+      "priceRange": { "min": 9500, "max": 48500 },
+      "totalProducts": 16
     }
   }
   ```
 
-### 3.2. Get Single Product (by ID or Slug)
-- **Method / Endpoint:** `GET /api/v1/products/:idOrSlug`
+### 3.2. Filter Metadata
+- **Method / Endpoint:** `GET /api/v1/products/filters/meta`
 - **Auth / Role:** Public
 - **Response (`200 OK`):**
-  Returns full product record including `dimensions`, `materials`, `customizationOptions`, and `gallery`.
+  ```json
+  {
+    "success": true,
+    "statusCode": 200,
+    "message": "Filter metadata retrieved successfully.",
+    "data": {
+      "categories": ["Beds", "Decor", "Lighting", "Seating", "Storage", "Tables"],
+      "roomTypes": ["architectural", "bedroom", "dining", "living", "office"],
+      "styles": ["Japandi", "Mid-Century", "Minimalist", "Scandinavian"],
+      "priceRange": { "min": 9500, "max": 48500 },
+      "priceBounds": { "min": 9500, "max": 48500 },
+      "totalProducts": 16
+    }
+  }
+  ```
 
-### 3.3. Calculate Authoritative Configured Price
+### 3.3. Get Product by Slug
+- **Method / Endpoint:** `GET /api/v1/products/slug/:slug`
+- **Auth / Role:** Public
+- **Response (`200 OK`):** Full serialized product object.
+- **Errors:** `404 Not Found` with `code: "PRODUCT_NOT_FOUND"`.
+
+### 3.4. Get Product by ID
+- **Method / Endpoint:** `GET /api/v1/products/:id`
+- **Auth / Role:** Public
+- **Identifier:** Stable `productId` (e.g. `'chair-komorebi'`) or MongoDB ObjectId (`'6b01c3b25f1bab89380809a1'`).
+- **Response (`200 OK`):** Full serialized product object including `dimensions`, `materials`, `customizationOptions`, and `gallery`.
+- **Errors:** `404 Not Found` with `code: "PRODUCT_NOT_FOUND"`.
+
+### 3.5. Calculate Authoritative Configured Price
 - **Method / Endpoint:** `POST /api/v1/products/:productId/price`
 - **Auth / Role:** Public
 - **Request Body:**
@@ -210,8 +281,8 @@
   {
     "configuration": {
       "fabricId": "fab-boucle",
-      "finishId": "fin-walnut",
-      "sizeId": "sz-std"
+      "finishId": "fin-oak",
+      "sizeId": "size-grand"
     }
   }
   ```
@@ -220,21 +291,36 @@
   {
     "success": true,
     "statusCode": 200,
+    "message": "Configured price calculated successfully.",
     "data": {
       "productId": "chair-komorebi",
       "basePrice": 28000,
-      "adjustments": {
-        "fabric": { "id": "fab-boucle", "name": "Cream Bouclé", "delta": 3500 },
-        "finish": { "id": "fin-walnut", "name": "Smoked Walnut", "delta": 2200 },
-        "size": { "id": "sz-std", "name": "Standard Scale", "delta": 0 }
-      },
-      "finalPrice": 33700,
+      "fabricAdjustment": 3500,
+      "finishAdjustment": 2000,
+      "sizeAdjustment": 4000,
+      "finalPrice": 37500,
       "currency": "INR",
-      "formattedPrice": "₹33,700",
-      "isValid": true
+      "formattedPrice": "₹37,500",
+      "isValid": true,
+      "selectedOptions": {
+        "fabric": { "id": "fab-boucle", "name": "Cream Bouclé", "delta": 3500 },
+        "finish": { "id": "fin-oak", "name": "Natural White Oak", "delta": 2000 },
+        "size": { "id": "size-grand", "name": "Grand Scale (+10% width)", "delta": 4000 }
+      },
+      "breakdown": [
+        { "item": "Base Price", "amount": 28000 },
+        { "item": "Cream Bouclé", "amount": 3500 },
+        { "item": "Natural White Oak", "amount": 2000 },
+        { "item": "Grand Scale (+10% width)", "amount": 4000 }
+      ]
     }
   }
   ```
+- **Error Codes:**
+  - `400 Bad Request`: `PRODUCT_NOT_CUSTOMIZABLE` (for products with `customizable: false`)
+  - `400 Bad Request`: `INVALID_CUSTOMIZATION_OPTION` (for non-existent fabricId, finishId, or sizeId)
+  - `400 Bad Request`: `VALIDATION_ERROR` (malformed request body)
+  - `404 Not Found`: `PRODUCT_NOT_FOUND` (non-existent productId)
 
 ---
 

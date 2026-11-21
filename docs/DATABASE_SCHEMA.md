@@ -119,13 +119,14 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
+      minlength: [8, 'Password must be at least 8 characters'],
       select: false, // Omitted by default in queries for security
     },
     fullName: {
       type: String,
       required: [true, 'Full name is required'],
       trim: true,
+      minlength: [2, 'Full name must be at least 2 characters'],
       maxlength: [100, 'Name cannot exceed 100 characters'],
     },
     role: {
@@ -137,15 +138,26 @@ const userSchema = new mongoose.Schema(
       default: 'customer',
       index: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
     refreshTokenHash: {
       type: String,
-      select: false, // For revoking sessions
+      select: false, // For session rotation and revocation
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
     },
   },
   {
     timestamps: true,
     toJSON: {
       transform(doc, ret) {
+        ret.id = ret._id.toString();
+        delete ret._id;
         delete ret.password;
         delete ret.refreshTokenHash;
         delete ret.__v;
@@ -271,6 +283,17 @@ const productSchema = new mongoose.Schema(
       finishes: [optionItemSchema],
       sizes: [optionItemSchema],
     },
+    specifications: {
+      frameMaterial: { type: String, trim: true },
+      joinery: { type: String, trim: true },
+      cushionFill: { type: String, trim: true },
+      origin: { type: String, trim: true },
+      warranty: { type: String, trim: true },
+      assemblyRequired: { type: Boolean, default: false },
+      careInstructions: { type: String, trim: true },
+    },
+    relatedProductIds: [{ type: String, trim: true }],
+    prompt: { type: String, trim: true },
   },
   {
     timestamps: true,
@@ -278,10 +301,19 @@ const productSchema = new mongoose.Schema(
 );
 ```
 
-- **Indexes:**
-  - Text search compound index on `name` and `description`: `{ name: 'text', description: 'text' }`.
-  - Filter compound index: `{ category: 1, roomType: 1, style: 1, basePrice: 1 }`.
-  - Unique index: `{ productId: 1 }` and `{ slug: 1 }`.
+- **Production Indexes:**
+  - Unique primary identifiers: `{ productId: 1 }` (unique) and `{ slug: 1 }` (unique).
+  - High-throughput catalog filtering & sorting: `{ category: 1, roomType: 1, style: 1, basePrice: 1, inStock: 1 }`.
+  - Feature & bespoke flags: `{ featured: 1, customizable: 1 }`.
+  - Full-text search index: `{ name: 'text', description: 'text', primaryMaterial: 'text' }`.
+
+- **Serialization & Identifier Stability:**
+  - Every document serialized via `serializeProduct()` maps `id: doc.productId` guaranteeing complete backwards-compatibility with frontend components expecting `product.id`.
+  - Both `_id` (MongoDB ObjectID) and `productId` (e.g. `'chair-komorebi'`) are fully accessible.
+
+- **Authoritative Dataset & Seeding:**
+  - Seeded via `server/scripts/seedProducts.js` from `client/src/data/products.js`.
+  - Total records: 16 authoritative architectural products (8 customizable, 8 fixed). Idempotent normal mode and `--force` upsert mode.
 
 ---
 
