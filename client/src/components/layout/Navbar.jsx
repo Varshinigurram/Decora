@@ -14,11 +14,13 @@ import {
 } from 'lucide-react';
 import Button from '../common/Button';
 import { useWishlist } from '../../context/WishlistContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { wishlistCount } = useWishlist();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
   const primaryNavLinks = [
     { label: 'Home', path: '/', icon: Home, exact: true },
@@ -99,18 +101,46 @@ export default function Navbar() {
             </Button>
           </Link>
 
-          <Link
-            to="/login"
-            className={`p-2 rounded-full transition-colors ${
-              isLinkActive('/login', true) || isLinkActive('/register', true)
-                ? 'text-forest bg-ivory-subtle'
-                : 'text-charcoal-muted hover:text-charcoal hover:bg-ivory-subtle'
-            }`}
-            title="Account & Login"
-            aria-label="User Account"
-          >
-            <User className="w-5 h-5" />
-          </Link>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="text-[11px] font-mono uppercase px-2 py-0.5 bg-forest/10 text-forest rounded border border-forest/20 hover:bg-forest/20 transition-colors"
+                >
+                  Admin
+                </Link>
+              )}
+              <span
+                className="text-xs text-charcoal font-medium hidden xl:inline"
+                title={user?.email}
+              >
+                {user?.fullName?.split(' ')[0] || 'Account'}
+              </span>
+              <button
+                type="button"
+                onClick={logout}
+                className="text-xs text-taupe hover:text-charcoal px-2 py-1 rounded transition-colors"
+                title="Sign Out"
+                aria-label="Sign Out"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className={`p-2 rounded-full transition-colors ${
+                isLinkActive('/login', true) || isLinkActive('/register', true)
+                  ? 'text-forest bg-ivory-subtle'
+                  : 'text-charcoal-muted hover:text-charcoal hover:bg-ivory-subtle'
+              }`}
+              title="Account & Login"
+              aria-label="User Account"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          )}
         </div>
 
         {/* Tablet / Mobile Navigation Actions */}
@@ -186,13 +216,42 @@ export default function Navbar() {
                 Book Design Consultation
               </Button>
             </Link>
-            <Link
-              to="/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-center text-sm font-medium text-charcoal py-2 hover:text-forest"
-            >
-              Sign In / Register
-            </Link>
+            {isAuthenticated ? (
+              <div className="pt-2 flex flex-col gap-2">
+                <div className="px-3 py-2 bg-ivory-subtle rounded border border-sand/40 flex items-center justify-between">
+                  <span className="text-xs text-charcoal font-medium truncate">
+                    {user?.fullName}
+                  </span>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-[10px] uppercase font-mono px-1.5 py-0.5 bg-forest text-ivory rounded"
+                    >
+                      Admin
+                    </Link>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="text-center text-sm font-medium text-taupe py-2 hover:text-charcoal transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-center text-sm font-medium text-charcoal py-2 hover:text-forest"
+              >
+                Sign In / Register
+              </Link>
+            )}
           </div>
         </div>
       )}
