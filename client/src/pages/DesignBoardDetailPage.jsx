@@ -162,7 +162,19 @@ export default function DesignBoardDetailPage() {
           </div>
 
           {/* Top Actions */}
-          <div className="flex items-center gap-2.5 shrink-0 self-start md:self-end">
+          <div className="flex items-center gap-2.5 shrink-0 self-start md:self-end flex-wrap">
+            <Link to={`/room-planner?boardId=${board.id}`}>
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex items-center gap-1.5 text-xs shadow-subtle"
+                title={board.roomLayout ? 'Open interactive 2D floorplan for this board' : 'Stage a new 2D room plan for this board'}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>{board.roomLayout ? 'Open Room Plan' : 'Stage Room Layout'}</span>
+              </Button>
+            </Link>
+
             <Button
               variant="secondary"
               size="sm"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Calendar, Layers, ArrowRight, HelpCircle } from 'lucide-react';
+import { Sparkles, Calendar, Layers, ArrowRight, HelpCircle, Compass } from 'lucide-react';
 import PriceDisplay from '../common/PriceDisplay';
 import Button from '../common/Button';
 
@@ -87,7 +87,16 @@ export default function BoardBudgetSummary({
           * Estimated furniture budget based on exact material and finish snapshots saved to this board. Excludes architectural delivery, taxes, and bespoke custom hardware.
         </p>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          {board?.id && (
+            <Link to={`/room-planner?boardId=${board.id}`}>
+              <Button variant="secondary" size="sm" className="flex items-center gap-1.5 text-charcoal">
+                <Compass className="w-3.5 h-3.5 text-forest" />
+                <span>{board.roomLayout ? 'View Room Plan' : 'Stage in 2D Planner'}</span>
+              </Button>
+            </Link>
+          )}
+
           <Link to="/consultation">
             <Button variant="primary" size="sm" className="flex items-center gap-1.5 shadow-subtle">
               <Calendar className="w-3.5 h-3.5" />
