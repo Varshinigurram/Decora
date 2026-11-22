@@ -1,16 +1,40 @@
-import React, { useState, useMemo } from 'react';
-import { Sliders, Sparkles, ShieldCheck, Ruler, Clock } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Sliders, Sparkles, ShieldCheck, Ruler, Clock, AlertTriangle, RefreshCw, WifiOff } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import CustomizerCatalogCard from '../components/customizer/CustomizerCatalogCard';
 import EmptyState from '../components/common/EmptyState';
-import { getCustomizableProducts } from '../data/products';
+import Button from '../components/common/Button';
+import productService from '../services/productService';
 
 export default function CustomizerPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [customizableProducts, setCustomizableProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isFallback, setIsFallback] = useState(false);
 
-  const customizableProducts = useMemo(() => {
-    return getCustomizableProducts();
+  const fetchCustomizable = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await productService.getProducts({
+        customizable: true,
+        limit: 24,
+      });
+      setCustomizableProducts(result.products || []);
+      setIsFallback(Boolean(result.isFallback));
+    } catch (err) {
+      console.error('Failed to load customizable products:', err);
+      setError(err?.message || 'Unable to connect to the customization studio service.');
+      setCustomizableProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchCustomizable();
+  }, [fetchCustomizable]);
 
   const categories = useMemo(() => {
     const unique = Array.from(new Set(customizableProducts.map((p) => p.category)));
@@ -130,14 +154,74 @@ export default function CustomizerPage() {
           </span>
         </div>
 
+        {/* Offline Fallback Banner */}
+        {isFallback && (
+          <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded flex items-center justify-between text-xs text-amber-900 shadow-xs">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>
+                Operating in <strong>offline fallback mode</strong>. Displaying cached customizable pieces.
+              </span>
+            </div>
+            <span className="font-mono text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">
+              Local Fallback
+            </span>
+          </div>
+        )}
+
+        {/* Loading Skeleton */}
+        {isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="card-architectural bg-white animate-pulse overflow-hidden rounded border border-sand/40"
+              >
+                <div className="aspect-[4/3] bg-sand/20" />
+                <div className="p-4 space-y-3">
+                  <div className="h-3 bg-sand/30 rounded w-1/3" />
+                  <div className="h-4 bg-sand/40 rounded w-3/4" />
+                  <div className="h-4 bg-sand/30 rounded w-1/2 pt-2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {!isLoading && error && customizableProducts.length === 0 && (
+          <div className="p-8 bg-white border border-accent-error/30 rounded text-center space-y-4">
+            <div className="inline-flex p-3 rounded-full bg-accent-error/10 text-accent-error">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="font-serif text-xl font-semibold text-charcoal">
+              Unable to Load Studio Designs
+            </h3>
+            <p className="text-xs text-charcoal-muted max-w-md mx-auto">
+              {error}
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={fetchCustomizable}
+              className="inline-flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry Studio Connection</span>
+            </Button>
+          </div>
+        )}
+
         {/* Customizable Pieces Grid */}
-        {filteredProducts.length > 0 ? (
+        {!isLoading && !error && filteredProducts.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {filteredProducts.map((product) => (
               <CustomizerCatalogCard key={product.id} product={product} />
             ))}
           </div>
-        ) : (
+        )}
+
+        {!isLoading && !error && filteredProducts.length === 0 && (
           <EmptyState
             title="No Customizable Designs"
             message={`No customizable pieces found in category "${selectedCategory}".`}

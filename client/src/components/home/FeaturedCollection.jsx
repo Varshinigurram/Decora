@@ -1,20 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import ProductCard from '../catalog/ProductCard';
 import Button from '../common/Button';
+import productService from '../../services/productService';
 import { FEATURED_PRODUCTS } from '../../assets/furnitureMapping';
 
 export default function FeaturedCollection() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [products, setProducts] = useState(FEATURED_PRODUCTS);
   const [wishlistIds, setWishlistIds] = useState(new Set(['chair-komorebi']));
+
+  useEffect(() => {
+    let isMounted = true;
+    productService
+      .getProducts({ featured: true, limit: 12 })
+      .then((res) => {
+        if (isMounted && res?.products && res.products.length > 0) {
+          setProducts(res.products);
+        }
+      })
+      .catch((err) => {
+        // Non-blocking: retains initial FEATURED_PRODUCTS
+        console.warn('Featured collection using static fallback:', err?.message);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const categories = ['All', 'Seating', 'Tables', 'Storage', 'Beds'];
 
   const filteredProducts =
     activeCategory === 'All'
-      ? FEATURED_PRODUCTS
-      : FEATURED_PRODUCTS.filter((p) => p.category === activeCategory);
+      ? products
+      : products.filter((p) => p.category === activeCategory);
 
   const handleToggleWishlist = (productId) => {
     setWishlistIds((prev) => {

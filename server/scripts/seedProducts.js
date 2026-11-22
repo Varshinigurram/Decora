@@ -11,9 +11,15 @@ const __dirname = path.dirname(__filename);
 // Load .env from server root
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-function transformProduct(prod) {
+/**
+ * Classifies product fields into:
+ * 1. catalogMetadata: Sourced authoritatively from frontend products dataset (updated in force mode).
+ * 2. operationalDefaults: Initial defaults set ONLY on document insert ($setOnInsert in force mode).
+ */
+function classifyProductFields(prod) {
   const productId = prod.id || prod.productId;
-  return {
+
+  const catalogMetadata = {
     productId,
     slug: prod.slug,
     name: prod.name,
@@ -22,8 +28,6 @@ function transformProduct(prod) {
     roomType: prod.roomType,
     style: prod.style,
     basePrice: prod.basePrice,
-    inStock: prod.inStock !== false,
-    stockCount: typeof prod.stockCount === 'number' ? prod.stockCount : 10,
     dimensions: {
       width: prod.dimensions?.width,
       depth: prod.dimensions?.depth,
@@ -39,7 +43,6 @@ function transformProduct(prod) {
     gallery: prod.gallery || [],
     fallback: prod.fallback || '/assets/placeholders/placeholder-product.svg',
     tag: prod.tag,
-    featured: Boolean(prod.featured),
     customizable: Boolean(prod.customizable),
     customizationOptions: prod.customizationOptions
       ? {
@@ -52,14 +55,33 @@ function transformProduct(prod) {
     relatedProductIds: prod.relatedProductIds || [],
     prompt: prod.prompt,
   };
+
+  const operationalDefaults = {
+    inStock: prod.inStock !== false,
+    stockCount: typeof prod.stockCount === 'number' ? prod.stockCount : 10,
+    featured: Boolean(prod.featured),
+  };
+
+  return { catalogMetadata, operationalDefaults };
 }
 
 async function seedProducts() {
   const isForce = process.argv.includes('--force');
+  const allowProd = process.argv.includes('--allow-prod');
+  const nodeEnv = process.env.NODE_ENV || 'development';
 
   console.log('====================================================');
   console.log(`  DÉCORA — Product Catalog Seeding Utility ${isForce ? '(--force)' : ''}`);
   console.log('====================================================');
+
+  // Phase 3 — Production Safety Guard
+  if (nodeEnv === 'production' && !allowProd) {
+    console.error('\n[Safety Error] Seeding execution is blocked in production environment.');
+    console.error(`  - Current NODE_ENV: ${nodeEnv}`);
+    console.error("  - To authorize production seeding, pass the explicit '--allow-prod' flag:");
+    console.error('      node scripts/seedProducts.js --allow-prod [--force]\n');
+    process.exit(1);
+  }
 
   try {
     const productsSourcePath = path.resolve(__dirname, '../../client/src/data/products.js');
@@ -72,48 +94,65 @@ async function seedProducts() {
 
     console.log(`[Info] Loaded ${PRODUCTS.length} authoritative products from frontend source.`);
 
-    await connectDB();
+    const conn = await connectDB();
+    console.log(`[Environment] Target Environment: ${nodeEnv}`);
+    console.log(`[Environment] Target Database: ${conn.connection.name}`);
+    console.log(`[Environment] Host: ${conn.connection.host}`);
 
     let inserted = 0;
     let skipped = 0;
     let updated = 0;
+    let failed = 0;
 
     for (const rawProd of PRODUCTS) {
-      const doc = transformProduct(rawProd);
-      const existing = await Product.findOne({ productId: doc.productId });
+      try {
+        const { catalogMetadata, operationalDefaults } = classifyProductFields(rawProd);
 
-      if (isForce) {
-        await Product.findOneAndUpdate(
-          { productId: doc.productId },
-          { $set: doc },
-          { upsert: true, new: true, runValidators: true }
-        );
-        updated++;
-      } else {
-        if (existing) {
-          skipped++;
+        if (isForce) {
+          // Force Mode: Update catalog-managed fields, preserve admin-managed operational values
+          await Product.findOneAndUpdate(
+            { productId: catalogMetadata.productId },
+            {
+              $set: catalogMetadata,
+              $setOnInsert: operationalDefaults,
+            },
+            { upsert: true, new: true, runValidators: true }
+          );
+          updated++;
         } else {
-          await Product.create(doc);
-          inserted++;
+          // Normal Mode: Insert missing products, skip existing without modifying
+          const existing = await Product.findOne({ productId: catalogMetadata.productId });
+          if (existing) {
+            skipped++;
+          } else {
+            await Product.create({
+              ...catalogMetadata,
+              ...operationalDefaults,
+            });
+            inserted++;
+          }
         }
+      } catch (itemErr) {
+        failed++;
+        console.error(`[Item Error] Failed to process product "${rawProd.id || rawProd.productId}":`, itemErr.message);
       }
     }
 
     const totalCount = await Product.countDocuments();
 
     console.log('\n[Summary] Seeding operation complete:');
+    console.log(`  - Total processed: ${PRODUCTS.length}`);
     if (isForce) {
-      console.log(`  - Total processed: ${PRODUCTS.length}`);
-      console.log(`  - Upserted/Updated: ${updated}`);
+      console.log(`  - Upserted/Updated (catalog metadata): ${updated}`);
     } else {
-      console.log(`  - Total processed: ${PRODUCTS.length}`);
-      console.log(`  - Inserted: ${inserted}`);
+      console.log(`  - Inserted (new products): ${inserted}`);
       console.log(`  - Skipped (already existed): ${skipped}`);
     }
+    console.log(`  - Failed: ${failed}`);
     console.log(`  - Total products now in database: ${totalCount}\n`);
 
     await disconnectDB();
-    process.exit(0);
+    process.exit(failed > 0 ? 1 : 0);
   } catch (error) {
     console.error('\n[Fatal Error] Seeding failed:', error.message);
     try {

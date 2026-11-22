@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Heart,
@@ -11,6 +11,9 @@ import {
   ArrowRight,
   PackageOpen,
   FolderPlus,
+  AlertTriangle,
+  RefreshCw,
+  WifiOff,
 } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import PriceDisplay from '../components/common/PriceDisplay';
@@ -22,7 +25,8 @@ import ProductSpecifications from '../components/catalog/ProductSpecifications';
 import ProductCard from '../components/catalog/ProductCard';
 import EmptyState from '../components/common/EmptyState';
 import AddToBoardModal from '../components/designBoards/AddToBoardModal';
-import { getProductByIdOrSlug, getRelatedProducts } from '../data/products';
+import productService from '../services/productService';
+import { getRelatedProducts } from '../data/products';
 import { useWishlist } from '../context/WishlistContext';
 import { calculateConfiguredPrice } from '../utils/pricingEngine';
 
@@ -31,22 +35,80 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
+  // Async Product API State
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
+  const [error, setError] = useState(null);
+  const [isFallback, setIsFallback] = useState(false);
+
   // Design Board Integration State
   const [isAddToBoardOpen, setIsAddToBoardOpen] = useState(false);
   const [isCustomizePromptOpen, setIsCustomizePromptOpen] = useState(false);
   const [boardItemPayload, setBoardItemPayload] = useState(null);
 
-  // 1. Resolve Product by ID or Slug
-  const product = useMemo(() => getProductByIdOrSlug(id), [id]);
+  // Fetch product from Product API by ID or Slug
+  const fetchProduct = useCallback(async () => {
+    if (!id) return;
 
-  // 2. Resolve Related Furniture Designs
-  const relatedProducts = useMemo(() => {
-    if (!product) return [];
-    return getRelatedProducts(product, 3);
-  }, [product]);
+    setIsLoading(true);
+    setIsNotFound(false);
+    setError(null);
 
-  // Handle Invalid Product ID / Slug
-  if (!product) {
+    try {
+      const result = await productService.getProductByIdOrSlug(id);
+      const data = result?.product;
+      if (!data) {
+        setIsNotFound(true);
+        setProduct(null);
+        setRelatedProducts([]);
+      } else {
+        setProduct(data);
+        setIsFallback(Boolean(result.isFallback));
+
+        // Resolve curated companion pieces
+        const related = getRelatedProducts(data, 3);
+        setRelatedProducts(related);
+      }
+    } catch (err) {
+      if (err?.statusCode === 404 || err?.isNotFound || err?.response?.status === 404) {
+        setIsNotFound(true);
+        setProduct(null);
+      } else {
+        setError(err?.message || 'Unable to load product details from the studio service.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchProduct();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [fetchProduct]);
+
+  // 1. Loading Skeleton State
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 animate-pulse">
+        <div className="h-4 bg-sand/30 rounded w-48" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+          <div className="lg:col-span-7 aspect-[4/3] bg-sand/20 rounded border border-sand/40" />
+          <div className="lg:col-span-5 space-y-6">
+            <div className="h-4 bg-sand/30 rounded w-32" />
+            <div className="h-8 bg-sand/40 rounded w-3/4" />
+            <div className="h-24 bg-sand/20 rounded border border-sand/30" />
+            <div className="h-16 bg-sand/20 rounded" />
+            <div className="h-12 bg-sand/30 rounded w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Product Not Found (404)
+  if (isNotFound || (!product && !error)) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <EmptyState
@@ -56,6 +118,41 @@ export default function ProductDetailPage() {
           onAction={() => navigate('/catalog')}
           icon={PackageOpen}
         />
+      </div>
+    );
+  }
+
+  // 3. Network or Server Error State
+  if (error && !product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-4">
+        <div className="inline-flex p-4 rounded-full bg-accent-error/10 text-accent-error mb-2">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
+        <h2 className="font-serif text-2xl font-semibold text-charcoal">
+          Error Loading Design Details
+        </h2>
+        <p className="text-sm text-charcoal-muted max-w-md mx-auto">
+          {error}
+        </p>
+        <div className="pt-2 flex items-center justify-center gap-3">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={fetchProduct}
+            className="inline-flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Try Again</span>
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => navigate('/catalog')}
+          >
+            Browse Catalog
+          </Button>
+        </div>
       </div>
     );
   }
@@ -129,6 +226,21 @@ export default function ProductDetailPage() {
           { label: product.name },
         ]}
       />
+
+      {/* Offline Fallback Banner */}
+      {isFallback && (
+        <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded flex items-center justify-between text-xs text-amber-900 shadow-xs">
+          <div className="flex items-center gap-2">
+            <WifiOff className="w-4 h-4 text-amber-700 shrink-0" />
+            <span>
+              Operating in <strong>offline fallback mode</strong>. Displaying cached specifications.
+            </span>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">
+            Local Fallback
+          </span>
+        </div>
+      )}
 
       {/* 2. Main Staged PDP Grid: Gallery Left (Sticky), Actions Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">

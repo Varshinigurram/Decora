@@ -7,7 +7,7 @@ import axios from 'axios';
  * - Cross-Origin Credentials: true (for HTTP-only cookies)
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
+  baseURL: import.meta.env?.VITE_API_BASE_URL || (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) || 'http://localhost:5000/api/v1',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

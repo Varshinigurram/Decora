@@ -1,34 +1,68 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Sliders, ExternalLink, Info, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Sliders, ExternalLink, Info, AlertTriangle, RefreshCw, WifiOff } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import Badge from '../components/common/Badge';
+import Button from '../components/common/Button';
 import EmptyState from '../components/common/EmptyState';
 import SwatchSelector from '../components/customizer/SwatchSelector';
 import PriceBreakdownCard from '../components/customizer/PriceBreakdownCard';
-import { getProductByIdOrSlug } from '../data/products';
+import productService from '../services/productService';
 import { getDefaultConfiguration, calculateConfiguredPrice } from '../utils/pricingEngine';
 
 export default function ProductCustomizerPage() {
   const { productId } = useParams();
   const navigate = useNavigate();
 
-  const product = useMemo(() => {
-    return getProductByIdOrSlug(productId);
+  // Async Product API State
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
+  const [error, setError] = useState(null);
+  const [isFallback, setIsFallback] = useState(false);
+
+  const [configuration, setConfiguration] = useState({ fabricId: null, finishId: null, sizeId: null });
+  const [imgSrc, setImgSrc] = useState('/assets/placeholders/placeholder-product.svg');
+
+  const fetchProduct = useCallback(async () => {
+    if (!productId) return;
+
+    setIsLoading(true);
+    setIsNotFound(false);
+    setError(null);
+
+    try {
+      const result = await productService.getProductByIdOrSlug(productId);
+      const data = result?.product;
+      if (!data || !data.customizable || !data.customizationOptions) {
+        setIsNotFound(true);
+        setProduct(null);
+      } else {
+        setProduct(data);
+        const defaults = getDefaultConfiguration(data);
+        setConfiguration(defaults);
+        setImgSrc(data.image || '/assets/placeholders/placeholder-product.svg');
+        setIsFallback(Boolean(result.isFallback));
+      }
+    } catch (err) {
+      if (err?.statusCode === 404 || err?.isNotFound || err?.response?.status === 404) {
+        setIsNotFound(true);
+        setProduct(null);
+      } else {
+        setError(err?.message || 'Unable to connect to the customizer studio service.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }, [productId]);
+
+  useEffect(() => {
+    fetchProduct();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [fetchProduct]);
 
   const defaultConfig = useMemo(() => {
     return product ? getDefaultConfiguration(product) : { fabricId: null, finishId: null, sizeId: null };
-  }, [product]);
-
-  const [configuration, setConfiguration] = useState(defaultConfig);
-  const [imgSrc, setImgSrc] = useState(product?.image || '/assets/placeholders/placeholder-product.svg');
-
-  useEffect(() => {
-    if (product) {
-      setConfiguration(getDefaultConfiguration(product));
-      setImgSrc(product.image || '/assets/placeholders/placeholder-product.svg');
-    }
   }, [product]);
 
   const pricingResult = useMemo(() => {
@@ -53,8 +87,25 @@ export default function ProductCustomizerPage() {
     setImgSrc(product?.fallback || '/assets/placeholders/placeholder-product.svg');
   };
 
-  // If product is missing or non-customizable
-  if (!product || !product.customizable || !product.customizationOptions) {
+  // 1. Loading Skeleton State
+  if (isLoading) {
+    return (
+      <div className="bg-ivory min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8 animate-pulse">
+        <div className="h-4 bg-sand/30 rounded w-48" />
+        <div className="h-10 bg-sand/40 rounded w-1/3" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-7 aspect-[4/3] bg-sand/20 rounded border border-sand/40" />
+          <div className="lg:col-span-5 space-y-6">
+            <div className="h-48 bg-sand/20 rounded border border-sand/30" />
+            <div className="h-64 bg-sand/20 rounded border border-sand/30" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Product Not Found or Not Customizable State
+  if (isNotFound || (!product && !error)) {
     return (
       <div className="bg-ivory min-h-screen py-20 px-4 sm:px-6 lg:px-8">
         <EmptyState
@@ -63,6 +114,41 @@ export default function ProductCustomizerPage() {
           actionLabel="Browse Customizable Pieces"
           onAction={() => navigate('/customizer')}
         />
+      </div>
+    );
+  }
+
+  // 3. Error State
+  if (error && !product) {
+    return (
+      <div className="bg-ivory min-h-screen py-20 px-4 sm:px-6 lg:px-8 text-center space-y-4 max-w-md mx-auto">
+        <div className="inline-flex p-4 rounded-full bg-accent-error/10 text-accent-error mb-2">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
+        <h2 className="font-serif text-2xl font-semibold text-charcoal">
+          Error Loading Customizer
+        </h2>
+        <p className="text-sm text-charcoal-muted">
+          {error}
+        </p>
+        <div className="pt-2 flex items-center justify-center gap-3">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={fetchProduct}
+            className="inline-flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Try Again</span>
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => navigate('/customizer')}
+          >
+            All Customizable Pieces
+          </Button>
+        </div>
       </div>
     );
   }
@@ -100,6 +186,21 @@ export default function ProductCustomizerPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+        {/* Offline Fallback Banner */}
+        {isFallback && (
+          <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded flex items-center justify-between text-xs text-amber-900 shadow-xs">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>
+                Operating in <strong>offline fallback mode</strong>. Displaying cached customizer options.
+              </span>
+            </div>
+            <span className="font-mono text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">
+              Local Fallback
+            </span>
+          </div>
+        )}
+
         {/* Header Summary */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-sand/40 pb-6">
           <div className="space-y-2">

@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, AlertTriangle, RefreshCw, WifiOff } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import CatalogFilters from '../components/catalog/CatalogFilters';
 import CatalogSort from '../components/catalog/CatalogSort';
 import ProductGrid from '../components/catalog/ProductGrid';
 import Pagination from '../components/common/Pagination';
 import Button from '../components/common/Button';
+import productService from '../services/productService';
 import {
-  getAllProducts,
   getUniqueCategories,
   getUniqueRoomTypes,
   getUniqueMaterials,
@@ -21,11 +21,50 @@ export default function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-  const allProducts = useMemo(() => getAllProducts(), []);
-  const roomOptions = useMemo(() => getUniqueRoomTypes(), []);
-  const categoryOptions = useMemo(() => getUniqueCategories(), []);
-  const materialOptions = useMemo(() => getUniqueMaterials(), []);
-  const priceBounds = useMemo(() => getPriceBounds(), []);
+  // Dynamic state from Product API
+  const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: ITEMS_PER_PAGE,
+    total: 0,
+    pages: 1,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isFallback, setIsFallback] = useState(false);
+  const [filterMeta, setFilterMeta] = useState(null);
+
+  // Static fallback options for instantaneous initial render
+  const initialRoomOptions = useMemo(() => getUniqueRoomTypes(), []);
+  const initialCategoryOptions = useMemo(() => getUniqueCategories(), []);
+  const initialMaterialOptions = useMemo(() => getUniqueMaterials(), []);
+  const initialPriceBounds = useMemo(() => getPriceBounds(), []);
+
+  // Compute active bounds
+  const priceBounds = useMemo(() => {
+    if (filterMeta?.priceRange) {
+      return {
+        min: filterMeta.priceRange.min,
+        max: filterMeta.priceRange.max,
+      };
+    }
+    return initialPriceBounds;
+  }, [filterMeta, initialPriceBounds]);
+
+  const categoryOptions = useMemo(() => {
+    if (filterMeta?.categories && filterMeta.categories.length > 0) {
+      return ['All', ...filterMeta.categories];
+    }
+    return initialCategoryOptions;
+  }, [filterMeta, initialCategoryOptions]);
+
+  const roomOptions = useMemo(() => {
+    return initialRoomOptions;
+  }, [initialRoomOptions]);
+
+  const materialOptions = useMemo(() => {
+    return initialMaterialOptions;
+  }, [initialMaterialOptions]);
 
   // 1. Read Filter State from URL Query Parameters
   const searchQuery = searchParams.get('q') || '';
@@ -44,6 +83,93 @@ export default function CatalogPage() {
   const inStockOnly = searchParams.get('inStock') === 'true';
   const sortBy = searchParams.get('sort') || 'featured';
   const currentPage = Math.max(1, Number(searchParams.get('page')) || 1);
+
+  // Fetch filter metadata once on mount
+  useEffect(() => {
+    let isMounted = true;
+    productService
+      .getFilterMetadata()
+      .then((meta) => {
+        if (isMounted && meta) {
+          setFilterMeta(meta);
+        }
+      })
+      .catch((err) => {
+        // Non-blocking: will retain static fallback options
+        console.warn('Could not load dynamic filter metadata; using static defaults:', err?.message);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch products whenever search params change
+  const fetchProducts = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params = {
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+        sort: sortBy,
+      };
+
+      if (selectedCategory && selectedCategory !== 'All') {
+        params.category = selectedCategory;
+      }
+      if (selectedRoom && selectedRoom !== 'all') {
+        params.room = selectedRoom;
+      }
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      if (rawMinPrice) {
+        params.minPrice = Number(rawMinPrice);
+      }
+      if (rawMaxPrice) {
+        params.maxPrice = Number(rawMaxPrice);
+      }
+      if (inStockOnly) {
+        params.inStock = true;
+      }
+      if (selectedMaterials.length > 0) {
+        params.material = selectedMaterials.join(',');
+      }
+
+      const result = await productService.getProducts(params);
+      setProducts(result.products || []);
+      setPagination(
+        result.pagination || {
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+          total: result.products?.length || 0,
+          pages: Math.ceil((result.products?.length || 0) / ITEMS_PER_PAGE) || 1,
+        }
+      );
+      setIsFallback(Boolean(result.isFallback));
+    } catch (err) {
+      console.error('Error fetching catalog products:', err);
+      setError(err?.message || 'Unable to connect to the furniture catalog service.');
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    currentPage,
+    sortBy,
+    selectedCategory,
+    selectedRoom,
+    searchQuery,
+    rawMinPrice,
+    rawMaxPrice,
+    inStockOnly,
+    selectedMaterials,
+  ]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Helper to update search params while resetting page to 1 on filter changes
   const updateParams = (updates, resetPage = true) => {
@@ -103,97 +229,6 @@ export default function CatalogPage() {
     setSearchParams(new URLSearchParams(), { replace: false });
   };
 
-  // 2. Centralized Filtering Engine
-  const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
-      // Search matching (name, description, style, primaryMaterial, materials)
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
-        const matchesName = product.name.toLowerCase().includes(query);
-        const matchesDesc = product.description.toLowerCase().includes(query);
-        const matchesStyle = product.style?.toLowerCase().includes(query);
-        const matchesMaterial = product.materials?.some((m) =>
-          m.toLowerCase().includes(query)
-        );
-        if (!matchesName && !matchesDesc && !matchesStyle && !matchesMaterial) {
-          return false;
-        }
-      }
-
-      // Room matching
-      if (selectedRoom !== 'all') {
-        if (product.roomType !== selectedRoom) {
-          return false;
-        }
-      }
-
-      // Category matching
-      if (selectedCategory !== 'All') {
-        if (product.category !== selectedCategory) {
-          return false;
-        }
-      }
-
-      // Materials matching (must match at least one selected material)
-      if (selectedMaterials.length > 0) {
-        const hasMaterial = product.materials?.some((m) =>
-          selectedMaterials.includes(m)
-        );
-        if (!hasMaterial) {
-          return false;
-        }
-      }
-
-      // Price range matching (inclusive of exact boundaries)
-      if (product.basePrice < minPrice || product.basePrice > maxPrice) {
-        return false;
-      }
-
-      // In stock only matching
-      if (inStockOnly && !product.inStock) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [
-    allProducts,
-    searchQuery,
-    selectedRoom,
-    selectedCategory,
-    selectedMaterials,
-    minPrice,
-    maxPrice,
-    inStockOnly,
-  ]);
-
-  // 3. Centralized Sorting Engine
-  const sortedProducts = useMemo(() => {
-    const list = [...filteredProducts];
-    switch (sortBy) {
-      case 'price-asc':
-        return list.sort((a, b) => a.basePrice - b.basePrice);
-      case 'price-desc':
-        return list.sort((a, b) => b.basePrice - a.basePrice);
-      case 'name-asc':
-        return list.sort((a, b) => a.name.localeCompare(b.name));
-      case 'featured':
-      default:
-        return list.sort((a, b) => {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          return a.name.localeCompare(b.name);
-        });
-    }
-  }, [filteredProducts, sortBy]);
-
-  // 4. Pagination
-  const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return sortedProducts.slice(start, start + ITEMS_PER_PAGE);
-  }, [sortedProducts, currentPage]);
-
   // Active filters metrics
   const isPriceFiltered = minPrice > priceBounds.min || maxPrice < priceBounds.max;
   const hasActiveFilters =
@@ -252,6 +287,21 @@ export default function CatalogPage() {
           </Button>
         </div>
       </div>
+
+      {/* Offline Fallback Banner */}
+      {isFallback && (
+        <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded flex items-center justify-between text-xs text-amber-900 shadow-xs">
+          <div className="flex items-center gap-2">
+            <WifiOff className="w-4 h-4 text-amber-700 shrink-0" />
+            <span>
+              Operating in <strong>offline fallback mode</strong>. Displaying cached local catalog designs.
+            </span>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">
+            Local Fallback
+          </span>
+        </div>
+      )}
 
       {/* Main 2-Column Catalog Shell */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-10 items-start">
@@ -342,7 +392,7 @@ export default function CatalogPage() {
                   onClick={() => setIsMobileFiltersOpen(false)}
                   className="w-full"
                 >
-                  View {sortedProducts.length} Results
+                  View {pagination.total} Results
                 </Button>
               </div>
             </div>
@@ -355,23 +405,70 @@ export default function CatalogPage() {
           <CatalogSort
             sortBy={sortBy}
             onSortChange={handleSortChange}
-            totalCount={sortedProducts.length}
+            totalCount={pagination.total}
           />
 
-          {/* Product Grid */}
-          <ProductGrid
-            products={paginatedProducts}
-            onResetFilters={handleResetFilters}
-          />
+          {/* Error State */}
+          {error && !isLoading && (
+            <div className="p-6 bg-white border border-accent-error/30 rounded text-center space-y-3">
+              <div className="inline-flex p-3 rounded-full bg-accent-error/10 text-accent-error">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif text-lg font-semibold text-charcoal">
+                Unable to Load Catalog
+              </h3>
+              <p className="text-xs text-charcoal-muted max-w-md mx-auto">
+                {error}
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={fetchProducts}
+                className="inline-flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Retry Connection</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Loading Skeleton Grid */}
+          {isLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+              {Array.from({ length: ITEMS_PER_PAGE }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="card-architectural bg-white animate-pulse overflow-hidden rounded border border-sand/40"
+                >
+                  <div className="aspect-[4/5] bg-sand/20" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-3 bg-sand/30 rounded w-1/3" />
+                    <div className="h-4 bg-sand/40 rounded w-3/4" />
+                    <div className="h-4 bg-sand/30 rounded w-1/2 pt-2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Loaded Product Grid */}
+          {!isLoading && !error && (
+            <ProductGrid
+              products={products}
+              onResetFilters={handleResetFilters}
+            />
+          )}
 
           {/* Pagination Controls */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            totalItems={sortedProducts.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-          />
+          {!isLoading && !error && pagination.pages > 1 && (
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.pages}
+              onPageChange={handlePageChange}
+              totalItems={pagination.total}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
+          )}
         </div>
       </div>
     </div>

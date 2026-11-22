@@ -174,9 +174,10 @@ To ensure parity between frontend datasets and the backend database, dedicated s
 ### Implemented Seeding Workflows:
 1. **Product Catalog Seeding (`server/scripts/seedProducts.js`):**
    - Reads the authoritative 16 furniture designs from `client/src/data/products.js`.
-   - Normal mode: Idempotent operation that checks for existing `productId` and skips already-seeded products.
-   - Force mode (`--force`): Upserts and updates existing catalog entries without destructive wiping.
-   - Preserves exact product IDs (`chair-komorebi`, `sofa-sylvan`, `table-kanso`, etc.), slugs, dimensional specs, and pricing rules.
+   - **Field Classification:** Strictly separates catalog-managed metadata (`name`, `slug`, `dimensions`, `materials`, `customizationOptions`, `basePrice`, etc.) from operational administrator-managed fields (`inStock`, `stockCount`, `featured`).
+   - **Normal Mode:** Idempotent operation that checks for existing `productId` and skips already-seeded products (reports inserted, skipped, failed).
+   - **Force Mode (`--force`):** Executes `findOneAndUpdate` with `$set: catalogMetadata` and `$setOnInsert: operationalDefaults`. Updates catalog design specs while preserving administrator-managed stock status, unit counts, and featured promotions without accidental overwrites.
+   - **Production Safety:** Execution in `NODE_ENV=production` is strictly blocked unless the developer explicitly supplies the `--allow-prod` CLI flag. Target environment and database name are displayed cleanly without exposing credentials.
 2. **Admin Provisioning (`server/scripts/seedAdmin.js`):**
    - Provisions administrative accounts with bcrypt-hashed credentials and strict input validation.
    - Preserves existing accounts without accidental overwriting.
@@ -194,7 +195,7 @@ To ensure parity between frontend datasets and the backend database, dedicated s
 │ ├─ Stage 3: Complete Authentication, JWT cookies, role middleware [DONE]        │
 │ ├─ Stage 4 Step 1: Product backend architecture & implementation plan [DONE]    │
 │ ├─ Stage 4 Step 2: Product Model, REST APIs, Pricing Service & Seeding [DONE]   │
-│ └─ Stage 4 Step 3: Frontend Catalog Integration & Service Adapter Migration     │
+│ └─ Stage 4 Step 3: Frontend Catalog Integration & Service Adapter [DONE]        │
 └─────────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼

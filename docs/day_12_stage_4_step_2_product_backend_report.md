@@ -47,12 +47,14 @@ No modifications were made to frontend presentation components or the client-sid
 
 ### 1.5. Catalog Seeding Utility (`server/scripts/seedProducts.js`)
 - Loads products directly from `client/src/data/products.js` via ES module dynamic import.
-- **Normal Mode (`node server/scripts/seedProducts.js`):** Checks for existing `productId` and skips already-seeded items without destructive overwriting.
-- **Force Mode (`node server/scripts/seedProducts.js --force`):** Executes `findOneAndUpdate` with `$set` and `upsert: true` to synchronize fields.
+- **Field Classification:** Strictly separates catalog-managed metadata from administrator-managed operational state (`inStock`, `stockCount`, `featured`).
+- **Normal Mode (`node server/scripts/seedProducts.js`):** Checks for existing `productId` and skips already-seeded items without destructive overwriting. Reports inserted, skipped, and failed counts.
+- **Force Mode (`node server/scripts/seedProducts.js --force`):** Executes `findOneAndUpdate` with `$set: catalogMetadata` and `$setOnInsert: operationalDefaults`. Updates catalog design specs while preserving administrator-managed stock status, unit counts, and featured promotions.
+- **Production Guard:** Blocks execution under `NODE_ENV=production` unless the explicit `--allow-prod` CLI flag is passed.
 - Verified execution:
   - Initial run: 16 inserted, 0 skipped.
   - Second run (idempotence): 0 inserted, 16 skipped.
-  - Force mode: 16 updated.
+  - Force mode: 16 catalog metadata records updated (0 admin overrides).
 
 ---
 
