@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
 import { designBoardService } from '../services/designBoardService';
 import { PRODUCTS } from '../data/products';
 import { calculateConfiguredPrice } from '../utils/pricingEngine';
@@ -6,15 +7,22 @@ import { calculateConfiguredPrice } from '../utils/pricingEngine';
 const DesignBoardContext = createContext(null);
 
 export function DesignBoardProvider({ children }) {
+  const { isAuthenticated } = useAuth();
   const [boards, setBoards] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Sync auth mode to service
+  useEffect(() => {
+    designBoardService.setAuthMode(isAuthenticated);
+  }, [isAuthenticated]);
 
   // Initial load from persistence service
   const refreshBoards = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
+      designBoardService.setAuthMode(isAuthenticated);
       const data = await designBoardService.getBoards();
       setBoards(data);
     } catch (err) {
@@ -23,7 +31,7 @@ export function DesignBoardProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     refreshBoards();
@@ -45,7 +53,7 @@ export function DesignBoardProvider({ children }) {
   const updateBoard = async (boardId, updates) => {
     try {
       const updated = await designBoardService.updateBoard(boardId, updates);
-      setBoards((prev) => prev.map((b) => (b.id === boardId ? updated : b)));
+      setBoards((prev) => prev.map((b) => (b.id === boardId || b._id === boardId ? updated : b)));
       return updated;
     } catch (err) {
       console.error('Failed to update board:', err);
@@ -57,7 +65,7 @@ export function DesignBoardProvider({ children }) {
   const deleteBoard = async (boardId) => {
     try {
       await designBoardService.deleteBoard(boardId);
-      setBoards((prev) => prev.filter((b) => b.id !== boardId));
+      setBoards((prev) => prev.filter((b) => b.id !== boardId && b._id !== boardId));
       return true;
     } catch (err) {
       console.error('Failed to delete board:', err);
@@ -68,7 +76,7 @@ export function DesignBoardProvider({ children }) {
   // Retrieve a specific board by ID
   const getBoardById = useCallback(
     (boardId) => {
-      return boards.find((b) => b.id === boardId) || null;
+      return boards.find((b) => b.id === boardId || b._id === boardId) || null;
     },
     [boards]
   );
@@ -77,7 +85,7 @@ export function DesignBoardProvider({ children }) {
   const addItemToBoard = async (boardId, itemSnapshot) => {
     try {
       const updated = await designBoardService.saveBoardItem(boardId, itemSnapshot);
-      setBoards((prev) => prev.map((b) => (b.id === boardId ? updated : b)));
+      setBoards((prev) => prev.map((b) => (b.id === boardId || b._id === boardId ? updated : b)));
       return updated;
     } catch (err) {
       console.error('Failed to add item to board:', err);
@@ -92,7 +100,7 @@ export function DesignBoardProvider({ children }) {
       const updated = await designBoardService.updateBoardItem(boardId, boardItemId, {
         quantity: safeQty,
       });
-      setBoards((prev) => prev.map((b) => (b.id === boardId ? updated : b)));
+      setBoards((prev) => prev.map((b) => (b.id === boardId || b._id === boardId ? updated : b)));
       return updated;
     } catch (err) {
       console.error('Failed to update item quantity:', err);
@@ -103,7 +111,7 @@ export function DesignBoardProvider({ children }) {
   // Update an item's customization configuration and re-evaluate price
   const updateItemConfiguration = async (boardId, boardItemId, nextConfig) => {
     try {
-      const targetBoard = boards.find((b) => b.id === boardId);
+      const targetBoard = boards.find((b) => b.id === boardId || b._id === boardId);
       if (!targetBoard) throw new Error('Board not found');
 
       const existingItem = targetBoard.items?.find((it) => it.boardItemId === boardItemId);
@@ -125,7 +133,7 @@ export function DesignBoardProvider({ children }) {
       };
 
       const updated = await designBoardService.updateBoardItem(boardId, boardItemId, updates);
-      setBoards((prev) => prev.map((b) => (b.id === boardId ? updated : b)));
+      setBoards((prev) => prev.map((b) => (b.id === boardId || b._id === boardId ? updated : b)));
       return updated;
     } catch (err) {
       console.error('Failed to update item configuration:', err);
@@ -137,7 +145,7 @@ export function DesignBoardProvider({ children }) {
   const removeItemFromBoard = async (boardId, boardItemId) => {
     try {
       const updated = await designBoardService.removeBoardItem(boardId, boardItemId);
-      setBoards((prev) => prev.map((b) => (b.id === boardId ? updated : b)));
+      setBoards((prev) => prev.map((b) => (b.id === boardId || b._id === boardId ? updated : b)));
       return updated;
     } catch (err) {
       console.error('Failed to remove item from board:', err);
@@ -149,7 +157,7 @@ export function DesignBoardProvider({ children }) {
   const saveRoomLayoutToBoard = async (boardId, roomLayout) => {
     try {
       const updated = await designBoardService.saveRoomLayout(boardId, roomLayout);
-      setBoards((prev) => prev.map((b) => (b.id === boardId ? updated : b)));
+      setBoards((prev) => prev.map((b) => (b.id === boardId || b._id === boardId ? updated : b)));
       return updated;
     } catch (err) {
       console.error('Failed to save room layout to board:', err);

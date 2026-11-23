@@ -1,7 +1,7 @@
 # Décora — Database Schema & Data Models Specification
 
-**Document Version:** 1.0.0  
-**Phase:** Phase 4, Day 12 — Backend Architecture & API Contract Design  
+**Document Version:** 1.1.0  
+**Phase:** Phase 4, Day 13 — Complete User Data Backend Integration (Wishlist, Design Boards, Room Layouts, Consultations & Admin)  
 **Target Engine:** MongoDB (Mongoose ODM v8)  
 **Conventions:** Metric system ($cm$, $m$, $kg$), INR ($₹$), ISO-8601 Timestamps, Compound Indexes for Multi-Tenant User Isolation  
 

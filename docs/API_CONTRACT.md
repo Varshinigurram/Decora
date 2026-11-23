@@ -1,7 +1,7 @@
 # Décora — REST API Contract Specification (`/api/v1`)
 
-**Document Version:** 1.0.0  
-**Phase:** Phase 4, Day 12 — Backend Architecture & API Contract Design  
+**Document Version:** 1.1.0  
+**Phase:** Phase 4, Day 13 — Complete User Data Backend Integration Implemented & Tested  
 **Base URL:** `http://localhost:5000/api/v1`  
 **Transport Security:** CORS with credentials, HTTP-only Cookie Bearer tokens, JSON envelopes  
 

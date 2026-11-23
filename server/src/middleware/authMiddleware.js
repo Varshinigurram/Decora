@@ -42,6 +42,7 @@ export async function authenticateJWT(req, res, next) {
 
     // 4. Attach live database-backed user
     req.user = {
+      _id: user._id,
       id: user._id.toString(),
       email: user.email,
       fullName: user.fullName,
@@ -59,5 +60,41 @@ export async function authenticateJWT(req, res, next) {
       return next(AppError.unauthorized('Invalid authentication token signature.'));
     }
     next(error);
+  }
+}
+
+/**
+ * Optional Authentication Middleware: optionalAuthenticateJWT
+ * Attaches req.user if a valid token is present, but allows guests (req.user = null) through.
+ */
+export async function optionalAuthenticateJWT(req, res, next) {
+  try {
+    let token = req.cookies?.[COOKIE_NAMES.ACCESS];
+    if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+    const decoded = authService.verifyAccessToken(token);
+    const user = await User.findById(decoded.id).select('email fullName role isActive tokenVersion');
+    if (user && user.isActive && decoded.tokenVersion === user.tokenVersion) {
+      req.user = {
+        id: user._id.toString(),
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        isActive: user.isActive,
+        tokenVersion: user.tokenVersion,
+        _id: user._id,
+      };
+    } else {
+      req.user = null;
+    }
+    next();
+  } catch {
+    req.user = null;
+    next();
   }
 }

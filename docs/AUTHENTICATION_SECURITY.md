@@ -1,8 +1,8 @@
 # Décora — Authentication & Security Architecture Specification
 
-**Document Version:** 2.0.0 (Implemented & Verified)\
-**Phase:** Phase 4, Day 12 — Authentication & User Management\
-**Model:** Dual JWT (Access + Refresh) via HTTP-Only Cookies, Atomic MongoDB Rotation, Live Database Authorization, Origin Validation\
+**Document Version:** 2.1.0 (Day 13 User Data Integration & Admin Security Verified)\
+**Phase:** Phase 4, Days 12–13 — Authentication, User Data Protection & Admin Governance\
+**Model:** Dual JWT (Access + Refresh) via HTTP-Only Cookies, Atomic MongoDB Rotation, Live Database Authorization, Origin Validation, Guest Migration Security\
 
 ---
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Layers, Sparkles, Compass, FolderPlus, ArrowRight, BookOpen } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import Button from '../components/common/Button';
@@ -19,6 +19,7 @@ export default function DesignBoardsPage() {
     deleteBoard,
     duplicateTemplate,
   } = useDesignBoards();
+  const navigate = useNavigate();
 
   const [activeRoomFilter, setActiveRoomFilter] = useState('All');
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -43,14 +44,20 @@ export default function DesignBoardsPage() {
       await updateBoard(editingBoard.id, boardData);
       setEditingBoard(null);
     } else {
-      await createBoard(boardData);
+      const created = await createBoard(boardData);
+      if (created?.id || created?._id) {
+        navigate(`/boards/${created.id || created._id}`);
+      }
     }
   };
 
   const handleDuplicateTemplate = async (templateId) => {
     setDuplicatingTemplateId(templateId);
     try {
-      await duplicateTemplate(templateId);
+      const created = await duplicateTemplate(templateId);
+      if (created?.id || created?._id) {
+        navigate(`/boards/${created.id || created._id}`);
+      }
     } catch (err) {
       console.error('Failed to duplicate template:', err);
     } finally {

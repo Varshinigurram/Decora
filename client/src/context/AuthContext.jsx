@@ -1,11 +1,42 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
+import { wishlistService } from '../services/wishlistService';
+import { designBoardService } from '../services/designBoardService';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * Safe, non-blocking guest-to-account migration helper.
+   * Migrates local guest wishlist and guest design boards to MongoDB.
+   * Clears localStorage only after confirmed server persistence.
+   */
+  const migrateGuestData = async () => {
+    // 1. Migrate guest wishlist (supports both current and legacy storage keys)
+    try {
+      const ids = wishlistService.getGuestWishlistIds();
+      if (Array.isArray(ids) && ids.length > 0) {
+        await wishlistService.syncWishlist(ids);
+        wishlistService.clearGuestStorage();
+      }
+    } catch (err) {
+      console.warn('Guest wishlist migration encountered a non-blocking error:', err);
+    }
+
+    // 2. Migrate guest design boards
+    try {
+      const guestBoards = designBoardService.getGuestBoardsFromStorage();
+      if (Array.isArray(guestBoards) && guestBoards.length > 0) {
+        await designBoardService.syncGuestBoards(guestBoards);
+        designBoardService.clearGuestStorage();
+      }
+    } catch (err) {
+      console.warn('Guest design board migration encountered a non-blocking error:', err);
+    }
+  };
 
   /**
    * Validates active session via GET /auth/me on mount.
@@ -47,6 +78,10 @@ export function AuthProvider({ children }) {
     const response = await api.post('/auth/login', credentials);
     const authenticatedUser = response.data.data.user;
     setUser(authenticatedUser);
+
+    // Non-blocking guest migration
+    migrateGuestData().catch((err) => console.warn('Background guest migration note:', err));
+
     return authenticatedUser;
   };
 
@@ -57,6 +92,10 @@ export function AuthProvider({ children }) {
     const response = await api.post('/auth/register', userData);
     const newUser = response.data.data.user;
     setUser(newUser);
+
+    // Non-blocking guest migration
+    migrateGuestData().catch((err) => console.warn('Background guest migration note:', err));
+
     return newUser;
   };
 
@@ -70,16 +109,8 @@ export function AuthProvider({ children }) {
       // Proceed with client logout even if server returns error
     } finally {
       setUser(null);
+      designBoardService.setAuthMode(false);
     }
-  };
-
-  /**
-   * Guest design-board migration boundary hook.
-   * NOTE: As mandated by Stage 3 architecture, the backend /boards/migrate endpoint
-   * will be implemented in Stage 5. Local storage is preserved and never cleared here.
-   */
-  const migrateGuestBoards = async () => {
-    return { migrated: false, count: 0, reason: 'Deferred to Stage 5 backend board persistence' };
   };
 
   const value = {
@@ -92,7 +123,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     checkAuth,
-    migrateGuestBoards,
+    migrateGuestBoards: migrateGuestData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

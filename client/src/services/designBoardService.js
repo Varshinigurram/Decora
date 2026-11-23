@@ -2,15 +2,10 @@
  * Décora – Design Board Persistence Service Adapter
  * 
  * Provides an asynchronous service interface for managing design boards and item snapshots.
- * Current implementation uses browser localStorage, isolated so it can seamlessly
- * migrate to backend API endpoints (e.g. Axios / MongoDB) in Phase 4/5.
- * 
- * Guarantees:
- * - Pure asynchronous API (returns Promises).
- * - Graceful error handling for corrupted or quota-limited storage.
- * - Does not auto-seed personal boards when storage is empty (clean empty state).
- * - Offers optional sample templates for explicit user duplication.
+ * Automatically switches between authenticated backend MongoDB endpoints (/api/v1/boards)
+ * and guest browser localStorage persistence.
  */
+import api from './api.js';
 
 const STORAGE_KEY = 'decora_design_boards';
 
@@ -79,12 +74,12 @@ export const SAMPLE_BOARD_TEMPLATES = [
         configuration: {
           fabricId: 'fab-boucle',
           finishId: 'fin-walnut',
-          sizeId: 'sz-std',
+          sizeId: 'size-std',
         },
         selectedOptions: {
           fabric: { id: 'fab-boucle', name: 'Cream Bouclé', delta: 3500, colorHex: '#F4F0EA' },
           finish: { id: 'fin-walnut', name: 'Smoked Walnut', delta: 2200, colorHex: '#4A3525' },
-          size: { id: 'sz-std', name: 'Standard Scale', delta: 0, scaleFactor: 1.0 },
+          size: { id: 'size-std', name: 'Standard (78 × 84 cm)', delta: 0, scaleFactor: 1.0 },
         },
         dimensions: { width: 78, depth: 84, height: 72, formatted: '78 × 84 × 72 cm' },
         addedAt: '2026-11-17T10:00:00.000Z',
@@ -178,7 +173,7 @@ export const SAMPLE_BOARD_TEMPLATES = [
       },
     ],
     roomLayout: {
-      roomLength: 5.0,
+      roomLength: 4.8,
       roomWidth: 4.0,
       units: 'm',
       furnitureInstances: [
@@ -204,17 +199,14 @@ export const SAMPLE_BOARD_TEMPLATES = [
 ];
 
 /**
- * Internal helper to read raw array from localStorage
+ * Internal helpers for guest localStorage
  */
 function readStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      console.warn('Storage format error: expected array for design boards');
-      return [];
-    }
+    if (!Array.isArray(parsed)) return [];
     return parsed;
   } catch (err) {
     console.warn('Unable to parse design boards from localStorage:', err);
@@ -222,9 +214,6 @@ function readStorage() {
   }
 }
 
-/**
- * Internal helper to write raw array to localStorage
- */
 function writeStorage(boards) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(boards));
@@ -234,33 +223,55 @@ function writeStorage(boards) {
   }
 }
 
+let isAuthActive = false;
+
 /**
  * Asynchronous Design Board Service API
  */
 export const designBoardService = {
+  setAuthMode(authStatus) {
+    isAuthActive = Boolean(authStatus);
+  },
+
+  getAuthMode() {
+    return isAuthActive;
+  },
+
+  getGuestBoardsFromStorage() {
+    return readStorage();
+  },
+
+  clearGuestStorage() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
+  },
+
   /**
    * Retrieves all user design boards
-   * @returns {Promise<Array>} Array of DesignBoard objects
    */
   async getBoards() {
+    if (isAuthActive) {
+      const res = await api.get('/boards');
+      return res.data?.data?.boards || [];
+    }
     return new Promise((resolve) => {
-      // Simulate minor microtask async latency matching real API convention
-      setTimeout(() => {
-        resolve(readStorage());
-      }, 10);
+      setTimeout(() => resolve(readStorage()), 10);
     });
   },
 
   /**
    * Retrieves a specific board by ID
-   * @param {string} boardId 
-   * @returns {Promise<Object|null>}
    */
   async getBoardById(boardId) {
+    if (isAuthActive) {
+      const res = await api.get(`/boards/${boardId}`);
+      return res.data?.data || null;
+    }
     return new Promise((resolve) => {
       setTimeout(() => {
         const boards = readStorage();
-        const found = boards.find((b) => b.id === boardId);
+        const found = boards.find((b) => b.id === boardId || b._id === boardId);
         resolve(found || null);
       }, 10);
     });
@@ -268,10 +279,12 @@ export const designBoardService = {
 
   /**
    * Creates a new design board
-   * @param {Object} boardData 
-   * @returns {Promise<Object>} The created board
    */
   async createBoard(boardData) {
+    if (isAuthActive) {
+      const res = await api.post('/boards', boardData);
+      return res.data?.data;
+    }
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
@@ -283,7 +296,7 @@ export const designBoardService = {
             description: boardData.description?.trim() || '',
             roomType: boardData.roomType || 'Living Room',
             style: boardData.style || 'Warm Editorial',
-            coverImage: boardData.coverImage || null,
+            coverImage: boardData.coverImage || '/assets/categories/cat-living.svg',
             createdAt: timestamp,
             updatedAt: timestamp,
             items: Array.isArray(boardData.items) ? boardData.items : [],
@@ -301,17 +314,18 @@ export const designBoardService = {
   },
 
   /**
-   * Updates an existing board's metadata or room layout
-   * @param {string} boardId 
-   * @param {Object} updates 
-   * @returns {Promise<Object>}
+   * Updates an existing board's metadata
    */
   async updateBoard(boardId, updates) {
+    if (isAuthActive) {
+      const res = await api.patch(`/boards/${boardId}`, updates);
+      return res.data?.data;
+    }
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           const boards = readStorage();
-          const index = boards.findIndex((b) => b.id === boardId);
+          const index = boards.findIndex((b) => b.id === boardId || b._id === boardId);
           if (index === -1) {
             return reject(new Error(`Design Board "${boardId}" not found.`));
           }
@@ -335,15 +349,17 @@ export const designBoardService = {
 
   /**
    * Deletes a board by ID
-   * @param {string} boardId 
-   * @returns {Promise<boolean>}
    */
   async deleteBoard(boardId) {
+    if (isAuthActive) {
+      await api.delete(`/boards/${boardId}`);
+      return true;
+    }
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           const boards = readStorage();
-          const filtered = boards.filter((b) => b.id !== boardId);
+          const filtered = boards.filter((b) => b.id !== boardId && b._id !== boardId);
           writeStorage(filtered);
           resolve(true);
         } catch (err) {
@@ -355,21 +371,25 @@ export const designBoardService = {
 
   /**
    * Appends or updates an item snapshot on a board
-   * @param {string} boardId 
-   * @param {Object} itemSnapshot 
-   * @returns {Promise<Object>} The updated board
    */
   async saveBoardItem(boardId, itemSnapshot) {
+    if (isAuthActive) {
+      const res = await api.post(`/boards/${boardId}/items`, {
+        productId: itemSnapshot.productId,
+        quantity: itemSnapshot.quantity || 1,
+        configuration: itemSnapshot.configuration || {},
+      });
+      return res.data?.data;
+    }
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           const boards = readStorage();
-          const board = boards.find((b) => b.id === boardId);
+          const board = boards.find((b) => b.id === boardId || b._id === boardId);
           if (!board) {
             return reject(new Error(`Design Board "${boardId}" not found.`));
           }
 
-          // Ensure valid boardItemId
           const snapshot = {
             ...itemSnapshot,
             boardItemId: itemSnapshot.boardItemId || `bitem-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -381,7 +401,6 @@ export const designBoardService = {
           board.items = board.items || [];
           board.items.push(snapshot);
 
-          // Update cover image if none set
           if (!board.coverImage && snapshot.image) {
             board.coverImage = snapshot.image;
           }
@@ -397,18 +416,18 @@ export const designBoardService = {
   },
 
   /**
-   * Updates an item snapshot (e.g. quantity or configuration) on a board
-   * @param {string} boardId 
-   * @param {string} boardItemId 
-   * @param {Object} updates 
-   * @returns {Promise<Object>}
+   * Updates an item snapshot (quantity or configuration) on a board
    */
   async updateBoardItem(boardId, boardItemId, updates) {
+    if (isAuthActive) {
+      const res = await api.patch(`/boards/${boardId}/items/${boardItemId}`, updates);
+      return res.data?.data;
+    }
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           const boards = readStorage();
-          const board = boards.find((b) => b.id === boardId);
+          const board = boards.find((b) => b.id === boardId || b._id === boardId);
           if (!board) {
             return reject(new Error(`Design Board "${boardId}" not found.`));
           }
@@ -435,16 +454,17 @@ export const designBoardService = {
 
   /**
    * Removes an item snapshot from a board
-   * @param {string} boardId 
-   * @param {string} boardItemId 
-   * @returns {Promise<Object>} The updated board
    */
   async removeBoardItem(boardId, boardItemId) {
+    if (isAuthActive) {
+      const res = await api.delete(`/boards/${boardId}/items/${boardItemId}`);
+      return res.data?.data;
+    }
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           const boards = readStorage();
-          const board = boards.find((b) => b.id === boardId);
+          const board = boards.find((b) => b.id === boardId || b._id === boardId);
           if (!board) {
             return reject(new Error(`Design Board "${boardId}" not found.`));
           }
@@ -462,16 +482,17 @@ export const designBoardService = {
 
   /**
    * Saves or updates a complete 2D Room Planner layout on a board
-   * @param {string} boardId 
-   * @param {Object} roomLayout { roomLength, roomWidth, units, furnitureInstances }
-   * @returns {Promise<Object>}
    */
   async saveRoomLayout(boardId, roomLayout) {
+    if (isAuthActive) {
+      const res = await api.put(`/boards/${boardId}/layout`, roomLayout);
+      return res.data?.data;
+    }
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           const boards = readStorage();
-          const board = boards.find((b) => b.id === boardId);
+          const board = boards.find((b) => b.id === boardId || b._id === boardId);
           if (!board) {
             return reject(new Error(`Design Board "${boardId}" not found.`));
           }
@@ -489,10 +510,12 @@ export const designBoardService = {
 
   /**
    * Duplicates an existing board into a completely independent new board
-   * @param {string} boardId 
-   * @returns {Promise<Object>} The created duplicate board
    */
   async duplicateBoard(boardId) {
+    if (isAuthActive) {
+      const res = await api.post(`/boards/${boardId}/duplicate`);
+      return res.data?.data;
+    }
     const existing = await this.getBoardById(boardId);
     if (!existing) {
       throw new Error(`Board "${boardId}" not found for duplication.`);
@@ -517,13 +540,40 @@ export const designBoardService = {
 
   /**
    * Duplicates an optional sample template into the user's personal boards
-   * @param {string} templateId 
-   * @returns {Promise<Object>} The created personal board
    */
   async duplicateTemplate(templateId) {
     const template = SAMPLE_BOARD_TEMPLATES.find((t) => t.id === templateId);
     if (!template) {
       throw new Error(`Template "${templateId}" not found.`);
+    }
+
+    if (isAuthActive) {
+      // Create board on server
+      const created = await this.createBoard({
+        title: `${template.title} (Personal)`,
+        description: template.description,
+        roomType: template.roomType,
+        style: template.style,
+        coverImage: template.coverImage,
+      });
+
+      // Add each item to board on server
+      const targetId = created?.id || created?._id;
+      let currentBoard = created;
+      for (const it of template.items) {
+        currentBoard = await this.saveBoardItem(targetId, {
+          productId: it.productId,
+          quantity: it.quantity,
+          configuration: it.configuration,
+        });
+      }
+
+      // Save room layout if present
+      if (template.roomLayout) {
+        currentBoard = await this.saveRoomLayout(targetId, template.roomLayout);
+      }
+
+      return currentBoard;
     }
 
     const newBoardData = {
@@ -544,9 +594,19 @@ export const designBoardService = {
   },
 
   /**
+   * Bulk syncs guest boards to user account on server
+   */
+  async syncGuestBoards(boards) {
+    const res = await api.post('/boards/sync', { boards });
+    return res.data?.data?.boards || [];
+  },
+
+  /**
    * Returns the available static inspiration templates
    */
   getSampleTemplates() {
     return SAMPLE_BOARD_TEMPLATES;
   },
 };
+
+export default designBoardService;

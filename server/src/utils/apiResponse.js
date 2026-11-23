@@ -5,14 +5,24 @@
 export const apiResponse = {
   /**
    * Sends a standardized success JSON response.
-   * 
-   * @param {Object} res - Express response object
-   * @param {Object|Array|null} data - Payload data
-   * @param {string} message - Human-readable success message
-   * @param {number} statusCode - HTTP status code (default: 200)
-   * @param {Object} meta - Optional metadata (pagination, counts, etc.)
+   * Supports both signatures:
+   *   (res, data, message, statusCode, meta)
+   *   (res, statusCode, message, data, meta)
    */
-  success(res, data = null, message = 'Operation completed successfully', statusCode = 200, meta = {}) {
+  success(res, arg2 = null, arg3 = 'Operation completed successfully', arg4 = 200, meta = {}) {
+    let data = arg2;
+    let message = arg3;
+    let statusCode = arg4;
+    let metadata = meta;
+
+    // Polymorphic signature check: if arg2 is a number, it's (res, statusCode, message, data, meta)
+    if (typeof arg2 === 'number') {
+      statusCode = arg2;
+      message = typeof arg3 === 'string' ? arg3 : 'Operation completed successfully';
+      data = arg4 !== 200 ? arg4 : null;
+      metadata = typeof meta === 'object' ? meta : {};
+    }
+
     return res.status(statusCode).json({
       success: true,
       statusCode,
@@ -20,7 +30,7 @@ export const apiResponse = {
       data,
       meta: {
         timestamp: new Date().toISOString(),
-        ...meta,
+        ...metadata,
       },
     });
   },
@@ -32,3 +42,6 @@ export const apiResponse = {
     return this.success(res, data, message, 201, meta);
   },
 };
+
+export const ApiResponse = apiResponse;
+export default apiResponse;
