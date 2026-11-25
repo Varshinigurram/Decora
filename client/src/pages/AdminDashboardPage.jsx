@@ -18,15 +18,48 @@ export default function AdminDashboardPage() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const [statsRes, consultRes, prodRes] = await Promise.all([
+      const [statsSettled, consultSettled, prodSettled] = await Promise.allSettled([
         api.get('/admin/dashboard'),
         api.get('/admin/consultations'),
         api.get('/admin/products?limit=48'),
       ]);
 
-      if (statsRes.data?.success) setStats(statsRes.data.data);
-      if (consultRes.data?.success) setConsultations(consultRes.data.data.consultations || []);
-      if (prodRes.data?.success) setProducts(prodRes.data.data.products || prodRes.data.data || []);
+      const failedSections = [];
+
+      if (statsSettled.status === 'fulfilled' && statsSettled.value.data?.success) {
+        setStats(statsSettled.value.data.data);
+      } else {
+        setStats(null);
+        failedSections.push('dashboard metrics');
+        console.warn('Dashboard stats query failed:', statsSettled.status === 'rejected' ? statsSettled.reason : statsSettled.value?.data);
+      }
+
+      if (consultSettled.status === 'fulfilled' && consultSettled.value.data?.success) {
+        setConsultations(consultSettled.value.data.data.consultations || []);
+      } else {
+        setConsultations([]);
+        failedSections.push('consultations');
+        console.warn('Dashboard consultations query failed:', consultSettled.status === 'rejected' ? consultSettled.reason : consultSettled.value?.data);
+      }
+
+      if (prodSettled.status === 'fulfilled' && prodSettled.value.data?.success) {
+        setProducts(prodSettled.value.data.data.products || prodSettled.value.data.data || []);
+      } else {
+        setProducts([]);
+        failedSections.push('products');
+        console.warn('Dashboard products query failed:', prodSettled.status === 'rejected' ? prodSettled.reason : prodSettled.value?.data);
+      }
+
+      if (failedSections.length === 3) {
+        setFeedbackMsg({ type: 'error', text: 'Failed to load administrative data. Please check connection.' });
+      } else if (failedSections.length > 0) {
+        setFeedbackMsg({
+          type: 'error',
+          text: `Partial load failure: unable to retrieve ${failedSections.join(', ')}.`,
+        });
+      } else {
+        setFeedbackMsg(null);
+      }
     } catch (err) {
       console.error('Failed to load admin data:', err);
       setFeedbackMsg({ type: 'error', text: 'Failed to load administrative data.' });

@@ -75,9 +75,10 @@ export default function LoginPage() {
         navigate('/boards', { replace: true });
       }
     } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        'Unable to sign in. Please verify your email and password.';
+      const message = !err.response
+        ? 'Unable to connect to the Décora server. Please ensure the backend is running on port 5000.'
+        : err.response?.data?.message ||
+          'Unable to sign in. Please verify your email and password.';
       setServerError(message);
     } finally {
       setIsSubmitting(false);
